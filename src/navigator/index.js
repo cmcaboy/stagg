@@ -1,0 +1,69 @@
+import React from 'react';
+import {TabNavigator, StackNavigator} from 'react-navigation';
+import Settings from '../components/Settings';
+import Leaderboard from '../components/Leaderboard';
+import Stagg from '../components/Stagg';
+import Matches from '../components/Matches';
+import Messenger from '../components/Messenger';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import {Platform} from 'react-native';
+
+const Tabs = TabNavigator({
+    Settings: {
+        screen: Settings,
+        navigationOptions: {
+            tabBarLabel: 'Settings',
+            tabBarIcon: ({ tintColor }) => <Ionicons name='ios-bookmarks' size={30} color={tintColor} />
+          }
+    },
+    Leaderboard: {
+        screen: Leaderboard,
+        navigationOptions: {
+            tabBarLabel: 'Leaderboard',
+            tabBarIcon: ({ tintColor }) => <FontAwesome name='plus-square' size={30} color={tintColor} />
+          }
+    },
+    Stagg: {
+        screen: Stagg,
+        navigationOptions: {
+            tabBarLabel: 'Stagg',
+            tabBarIcon: ({ tintColor }) => <Ionicons name='ios-bookmarks' size={30} color={tintColor} />
+          }
+    },
+    Messenger: {
+        screen: Messenger,
+        navigationOptions: {
+            tabBarLabel: 'Messenger',
+            tabBarIcon: ({ tintColor }) => <Ionicons name='ios-bookmarks' size={30} color={tintColor} />
+          }
+    }
+}, {
+        navigationOptions: {
+          header: null
+        },
+        tabBarOptions: {
+          activeTintColor: Platform.OS === 'ios' ? 'purple' : 'white',
+          style: {
+            height: 56,
+            backgroundColor: Platform.OS === 'ios' ? 'white' : 'purple',
+            shadowColor: 'rgba(0, 0, 0, 0.24)',
+            shadowOffset: {
+              width: 0,
+              height: 3
+            },
+            shadowRadius: 6,
+            shadowOpacity: 1
+          }
+        }
+});
+
+const MainNavigator = StackNavigator({
+    Home: {
+        screen: Tabs
+    },
+    Messenger: {
+        screen: Messenger
+    }
+});
+
+export default MainNavigator;

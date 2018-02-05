@@ -4,6 +4,7 @@ import {Header, Button, Spinner, CardSection} from './src/components/common';
 import firebase from 'firebase';
 import LoginForm from './src/components/LoginForm';
 import { Constants } from 'expo';
+import MainNavigator from './src/navigator';
 
 function UdaciStatusBar ({backgroundColor, ...props}) {
   return (
@@ -39,7 +40,8 @@ export default class App extends React.Component {
     // use a switch statement to render a login screen, logout screen, or a spinner
     switch(this.state.loggedIn) {
       case true:
-        return <CardSection><Button onPress={() => firebase.auth().signOut()}>Log Out</Button></CardSection>
+        //return <CardSection><Button onPress={() => firebase.auth().signOut()}>Log Out</Button></CardSection>
+        return <MainNavigator />
       case false:
         return <LoginForm />
       default:
@@ -48,9 +50,9 @@ export default class App extends React.Component {
   }
   render() {
     return (
-      <View>
+      <View style={{flex:1}}>
         <UdaciStatusBar backgroundColor="purple" barStyle="light-content" />
-        <Header headerText="Stagg" />
+        
         {this.renderContent()}
       </View>
     );
