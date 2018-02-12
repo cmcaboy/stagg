@@ -1,10 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View, StatusBar } from 'react-native';
+import {Provider} from 'react-redux';
 import {Header, Button, Spinner, CardSection} from './src/components/common';
-import firebase from 'firebase';
 import LoginForm from './src/components/LoginForm';
 import { Constants } from 'expo';
 import MainNavigator from './src/navigator';
+import { PersistGate } from 'redux-persist/es/integration/react';
+import {store,persistor} from './src/store';
+import { firebase } from './src/firebase';
 
 function UdaciStatusBar ({backgroundColor, ...props}) {
   return (
@@ -20,17 +23,14 @@ export default class App extends React.Component {
   
   componentWillMount() {
     // Firebase authentication details gathered from my firebase account.
-    firebase.initializeApp({
-        apiKey: "AIzaSyCE7UpZW8NheU9jcX6rmXaADsQINK8tN50",
-        authDomain: "auth-9567c.firebaseapp.com",
-        databaseURL: "https://auth-9567c.firebaseio.com",
-        projectId: "auth-9567c",
-        storageBucket: "auth-9567c.appspot.com",
-        messagingSenderId: "77667387510"
-    });
+
     firebase.auth().onAuthStateChanged((user) => {
       if(user) {
         this.setState({loggedIn: true});
+        console.log('firebase auth: ',firebase.auth());
+        console.log('firebase uid: ',firebase.auth().currentUser.uid);
+
+        // We can use the firebase.auth().currentUSer.uid for our unique identifier.
       } else {
         this.setState({loggedIn: false});
       }
@@ -40,8 +40,8 @@ export default class App extends React.Component {
     // use a switch statement to render a login screen, logout screen, or a spinner
     switch(this.state.loggedIn) {
       case true:
-        //return <CardSection><Button onPress={() => firebase.auth().signOut()}>Log Out</Button></CardSection>
-        return <MainNavigator />
+        return <CardSection><Button onPress={() => firebase.auth().signOut()}>Log Out</Button></CardSection>
+        //return <MainNavigator />
       case false:
         return <LoginForm />
       default:
@@ -50,11 +50,14 @@ export default class App extends React.Component {
   }
   render() {
     return (
-      <View style={{flex:1}}>
-        <UdaciStatusBar backgroundColor="purple" barStyle="light-content" />
-        
-        {this.renderContent()}
-      </View>
+      <Provider store={store}>
+        <PersistGate persistor={persistor}>
+          <View style={{flex:1}}>
+            <UdaciStatusBar backgroundColor="purple" barStyle="light-content" />
+            {this.renderContent()}
+          </View>
+        </PersistGate>
+      </Provider>
     );
   }
 }

@@ -40,13 +40,23 @@ class LoginForm extends Component {
         )
 
         console.log('type',type);
+        console.log('token',token);
 
+
+        // the /me notation will refer to the userid referenced from the access token.
         if(type === 'success') {
             const response = await fetch(`https://graph.facebook.com/me?access_token=${token}`)
-            console.log(await response.json());
+            const responseData = await response.json();
             this.authenticate(token);
+
+            //console.log('firebase auth: ',firebase.auth());
+            
+            console.log('responseData',responseData.id);
+
+            const response2 = await fetch(`https://graph.facebook.com/me/?fields=first_name,last_name,picture&access_token=${token}`)
+            const response2Data = await response2.json();
+            console.log(response2Data);
         }
-        
     }
     onLoginSuccess() {
         this.setState({loading:false,error:'',email:'',password:''})
