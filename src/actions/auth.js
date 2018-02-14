@@ -12,7 +12,6 @@ export const startFacebookLogin = () => {
         if(type === 'success') {
             const response = await fetch(`https://graph.facebook.com/me?access_token=${token}`)
             const responseData = await response.json();
-            this.authenticate(token);
 
             const provider = firebase.auth.FacebookAuthProvider;
             const credential = provider.credential(token);
@@ -20,22 +19,32 @@ export const startFacebookLogin = () => {
             // Issue login with unique userid as per firebase auth
             login(firebase.auth().currentUser.uid);
         } else {
-            console.log("Login Error!");
+            //console.log("Login Error!");
             failedLogin('Facebook Login failed');
         }
         
     }
 }
 
-export const startEmailLogin = () => {
+export const startEmailLogin = (email = "",password = "") => {
     loading(true);
+    console.log('email: ',email);
+    console.log('password: ',password);
     return () => {
         firebase.auth().signInWithEmailAndPassword(email,password)
-            .then(login(firebase.auth().currentUser.uid))
+            .then((data) => {
+                console.log('firebase auth: ',firebase.auth());
+                console.log('data: ',data);
+                login(firebase.auth().currentUser.uid);
+            })
             .catch((error) => {
-                console.log(error);
+                console.log('error with login:',error);
                 firebase.auth().createUserWithEmailAndPassword(email,password)
-                    .then(login(firebase.auth().currentUser.uid))
+                    .then((data) => {
+                        console.log('firebase auth: ',firebase.auth());
+                        console.log('data: ',data);
+                        login(firebase.auth().currentUser.uid);
+                    })
                     .catch((error) => failedLogin(error));
             });
     }
@@ -63,13 +72,21 @@ export const login = (uid) => ({
     uid
 });
 
-export const startLogout = () => ({
+export const startLogout = () => {
     return () => {
         return firebase.auth().signOut();
     }
-});
+};
 export const logout = () => ({
     type: 'LOGOUT'
 });
 
+export const changeEmail = (email) => ({
+    type: 'CHANGE_EMAIL',
+    email
+});
 
+export const changePassword = (password) => ({
+    type: 'CHANGE_PASSWORD',
+    password
+});

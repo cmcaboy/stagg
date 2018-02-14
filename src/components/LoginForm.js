@@ -1,82 +1,40 @@
 import React, {Component} from 'react';
 import firebase from 'firebase';
 import {View,Text} from 'react-native';
+import {connect} from 'react-redux';
 import {Card,CardSection,Button,Spinner,Input} from './common';
-import {AccessToken,LoginManager} from 'react-native-fbsdk';
 import Expo from 'expo';
+import {
+    startEmailLogin,
+    startFacebookLogin,
+    changeEmail,
+    changePassword} from '../actions/auth';
 //import Input from './Input';
 
 
 class LoginForm extends Component {
-    state = {email: '',password:'',error:'',loading:false}
 
-    onButtonPress() {
-        const {email,password} = this.state;
-        this.setState({error:'',loading:true})
-        firebase.auth().signInWithEmailAndPassword(email,password)
-            .then(this.onLoginSuccess.bind(this))
-            .catch((error) => {
-                console.log(error);
-                firebase.auth().createUserWithEmailAndPassword(email,password)
-                    .then(this.onLoginSuccess.bind(this))
-                    .catch((error) => {
-                        console.log(error);
-                        this.setState({error:'Authentication Failed.',loading:false})
-                    });
-            });
-    }
-
-    authenticate = (token) => {
-        const provider = firebase.auth.FacebookAuthProvider;
-        const credential = provider.credential(token);
-        return firebase.auth().signInWithCredential(credential);
-    }
-    
-    async onButtonPressFB() {
-        console.log('facebook login');
-        
-        const {type,token} = await Expo.Facebook.logInWithReadPermissionsAsync('424631184639658',
-            {permissions:['public_profile','email']}
-        )
-
-        console.log('type',type);
-        console.log('token',token);
-
-
-        // the /me notation will refer to the userid referenced from the access token.
-        if(type === 'success') {
-            const response = await fetch(`https://graph.facebook.com/me?access_token=${token}`)
-            const responseData = await response.json();
-            this.authenticate(token);
-
-            //console.log('firebase auth: ',firebase.auth());
-            
-            console.log('responseData',responseData.id);
-
-            const response2 = await fetch(`https://graph.facebook.com/me/?fields=first_name,last_name,picture&access_token=${token}`)
-            const response2Data = await response2.json();
-            console.log(response2Data);
-        }
-    }
-    onLoginSuccess() {
-        this.setState({loading:false,error:'',email:'',password:''})
-    }
     renderButton() {
-        if(this.state.loading) {
+        if(this.props.isLoading) {
             return <Spinner size="small" />
         } else {
-            return <Button onPress={this.onButtonPress.bind(this)}>Log in</Button>
+            return (
+                <Button 
+                onPress={this.props.startEmailLogin}
+                >Log in</Button>
+            )
         }
     }
     renderButtonFB() {
-        if(this.state.loading) {
+        if(this.props.isLoading) {
             return <Spinner size="small" />
         } else {
-            return (<Button 
-                onPress={this.onButtonPressFB.bind(this)}
-                buttonStyleOverride={styles.buttonFBStyle}
-                textStyleOverride={styles.buttonTextFBStyle}
-            >Log in with Facebook</Button>
+            return (
+                <Button 
+                    onPress={this.props.startFacebookLogin}
+                    buttonStyleOverride={styles.buttonFBStyle}
+                    textStyleOverride={styles.buttonTextFBStyle}
+                >Log in with Facebook</Button>
             )
         }
     }
@@ -86,24 +44,24 @@ class LoginForm extends Component {
                 <CardSection>
                     <Input 
                         placeholder="user@gmail.com"
-                        value={this.state.email}
+                        value={this.props.email}
                         label="Email"
-                        onChangeText={email => this.setState({email})}
+                        onChangeText={email => this.props.changeEmail(email)}
                     />
                 </CardSection>
 
                 <CardSection>
                     <Input 
                         placeholder="password"
-                        value={this.state.password}
+                        value={this.props.password}
                         label="Password"
-                        onChangeText={password => this.setState({password})}
+                        onChangeText={password => this.props.changePassword(password)}
                         secureTextEntry={true}
                     />
                 </CardSection>
                 
                 <Text style={styles.errorTextStyle}>
-                    {this.state.error}
+                    {this.props.error}
                 </Text>
 
                 <CardSection>
@@ -131,4 +89,21 @@ const styles = {
     }
 }
 
-export default LoginForm;
+const mapStateToProps = (state,ownProps) => {
+    //console.log('state ---',state);
+    return {
+    email: state.authReducer.email,
+    password: state.authReducer.password,
+    error: state.authReducer.error,
+    isLoading: state.authReducer.isLoading
+}
+}
+
+const mapDispatchToProps = (dispatch) => ({
+    startEmailLogin: () => dispatch(startEmailLogin()),
+    startFacebookLogin: () => dispatch(startFacebookLogin()),
+    changeEmail: () => dispatch(changeEmail()),
+    changePassword: () => dispatch(changePassword())
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginForm);

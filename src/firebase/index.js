@@ -33,7 +33,7 @@
     ancillaryPics: {},
     gender: 'male'
   }
-
+/*
   console.log('in firebase script');
   
   db.collection(`users`).doc(`${newUser.uid}`).set({...newUser})
@@ -43,5 +43,5 @@
   db.collection(`users`).get()
         .then((data) => data.forEach((datum) => console.log(datum.data())))
         .catch((error) => console.log("Error writing document: ",error));
-
+*/
   export { firebase, googleAuthProvider, database as default };

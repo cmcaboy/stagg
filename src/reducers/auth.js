@@ -18,12 +18,12 @@ const authReducer = (state = {}, action) => {
                 ...state,
                 isLoading: action.isLoading
             }
-        case 'EMAIL_CHANGE':
+        case 'CHANGE_EMAIL':
             return {
                 ...state,
                 email: action.email
             }
-        case: 'PASSWORD_CHANGE':
+        case 'CHANGE_PASSWORD':
             return {
                 ...state,
                 password: action.password
@@ -40,3 +40,5 @@ const authReducer = (state = {}, action) => {
             
     }
 };
+
+export default authReducer;
