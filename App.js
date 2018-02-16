@@ -8,6 +8,7 @@ import MainNavigator from './src/navigator';
 import { PersistGate } from 'redux-persist/es/integration/react';
 import {store,persistor} from './src/store';
 import { firebase } from './src/firebase';
+import { login, logout } from './src/actions/auth';
 
 function UdaciStatusBar ({backgroundColor, ...props}) {
   return (
@@ -27,12 +28,14 @@ export default class App extends React.Component {
     firebase.auth().onAuthStateChanged((user) => {
       if(user) {
         this.setState({loggedIn: true});
-        console.log('firebase auth: ',firebase.auth());
-        console.log('firebase uid: ',firebase.auth().currentUser.uid);
+        store.dispatch(login(user.uid));
+        //console.log('firebase auth: ',firebase.auth());
+        //console.log('firebase uid: ',firebase.auth().currentUser.uid);
 
         // We can use the firebase.auth().currentUSer.uid for our unique identifier.
       } else {
         this.setState({loggedIn: false});
+        store.dispatch(logout());
       }
     })
   }

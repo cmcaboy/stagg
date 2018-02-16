@@ -20,7 +20,7 @@ class LoginForm extends Component {
         } else {
             return (
                 <Button 
-                onPress={this.props.startEmailLogin}
+                    onPress={() => this.props.startEmailLogin(this.props.email,this.props.password)}
                 >Log in</Button>
             )
         }
@@ -91,6 +91,7 @@ const styles = {
 
 const mapStateToProps = (state,ownProps) => {
     //console.log('state ---',state);
+    console.log('error': state.authReducer.error)
     return {
     email: state.authReducer.email,
     password: state.authReducer.password,
@@ -100,10 +101,10 @@ const mapStateToProps = (state,ownProps) => {
 }
 
 const mapDispatchToProps = (dispatch) => ({
-    startEmailLogin: () => dispatch(startEmailLogin()),
+    startEmailLogin: (email,password) => dispatch(startEmailLogin(email,password)),
     startFacebookLogin: () => dispatch(startFacebookLogin()),
-    changeEmail: () => dispatch(changeEmail()),
-    changePassword: () => dispatch(changePassword())
+    changeEmail: (email) => dispatch(changeEmail(email)),
+    changePassword: (password) => dispatch(changePassword(password))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginForm);

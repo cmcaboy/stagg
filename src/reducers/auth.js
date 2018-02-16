@@ -7,6 +7,7 @@ const defaultAuthReducer = {
 }
 
 const authReducer = (state = {}, action) => {
+    console.log('action -- ',action)
     switch(action.type) {
         case 'FAILED_LOGIN':
             return {

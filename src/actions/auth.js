@@ -3,7 +3,7 @@ import Expo from 'expo';
 
 export const startFacebookLogin = () => {
     loading(true);
-    return async () => {
+    return async (dispatch,getState) => {
         const {type,token} = await Expo.Facebook.logInWithReadPermissionsAsync('424631184639658',
             {permissions:['public_profile','email']}
         )
@@ -15,12 +15,14 @@ export const startFacebookLogin = () => {
 
             const provider = firebase.auth.FacebookAuthProvider;
             const credential = provider.credential(token);
-            firebase.auth().signInWithCredential(credential);
+            firebase.auth().signInWithCredential(credential)
+                .then(() =>  dispatch(login(firebase.auth().currentUser.uid)))
+                .catch(() => dispatch(failedLogin('Login Failed')));
             // Issue login with unique userid as per firebase auth
-            login(firebase.auth().currentUser.uid);
+           
         } else {
             //console.log("Login Error!");
-            failedLogin('Facebook Login failed');
+            dispatch(failedLogin('Login Failed'));
         }
         
     }
@@ -28,24 +30,20 @@ export const startFacebookLogin = () => {
 
 export const startEmailLogin = (email = "",password = "") => {
     loading(true);
-    console.log('email: ',email);
-    console.log('password: ',password);
-    return () => {
-        firebase.auth().signInWithEmailAndPassword(email,password)
+    return (dispatch, getState) => {
+        return firebase.auth().signInWithEmailAndPassword(email,password)
             .then((data) => {
-                console.log('firebase auth: ',firebase.auth());
-                console.log('data: ',data);
-                login(firebase.auth().currentUser.uid);
+                dispatch(login(firebase.auth().currentUser.uid));
             })
             .catch((error) => {
-                console.log('error with login:',error);
                 firebase.auth().createUserWithEmailAndPassword(email,password)
                     .then((data) => {
-                        console.log('firebase auth: ',firebase.auth());
-                        console.log('data: ',data);
-                        login(firebase.auth().currentUser.uid);
+                        //console.log('firebase auth: ',firebase.auth());
+                        dispatch(login(firebase.auth().currentUser.uid));
                     })
-                    .catch((error) => failedLogin(error));
+                    .catch((error) => {
+                        dispatch(failedLogin("Authentication Failed"));
+                    })
             });
     }
 }
@@ -53,7 +51,6 @@ export const startEmailLogin = (email = "",password = "") => {
 export const failedLogin = (error) => ({
     type: 'FAILED_LOGIN',
     updates: {
-        email: '',
         password: '',
         isLoading: false,
         error
@@ -73,8 +70,8 @@ export const login = (uid) => ({
 });
 
 export const startLogout = () => {
-    return () => {
-        return firebase.auth().signOut();
+    return (dispatch) => {
+        return firebase.auth().signOut()
     }
 };
 export const logout = () => ({
