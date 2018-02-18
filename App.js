@@ -43,8 +43,9 @@ export default class App extends React.Component {
     // use a switch statement to render a login screen, logout screen, or a spinner
     switch(this.state.loggedIn) {
       case true:
-        return <CardSection><Button onPress={() => firebase.auth().signOut()}>Log Out</Button></CardSection>
-        //return <MainNavigator />
+        return <MainNavigator />
+            //<CardSection><Button onPress={() => firebase.auth().signOut()}>Log Out</Button></CardSection>
+        
       case false:
         return <LoginForm />
       default:

@@ -8,6 +8,8 @@ const settingsReducer = (state = settingsReducerDefaultState,action = {}) => {
     switch(action.type) {
         case 'SET_INITIAL_SETTINGS':
             return action.initialSettings;
+        case 'LOAD_SETTINGS':
+            return {...state,...userSettings};
         case 'CHANGE_AGE_PREFERENCE':
             return {...state,...updates};
         case 'CHANGE_DISTANCE':

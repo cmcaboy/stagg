@@ -27,6 +27,8 @@ const profileReducer = (state = profileReducerDefaultState,action = {}) => {
             return {...state,...action.updates};
         case 'CHANGE_DESCRIPTION':
             return {...state,...action.updates};
+        case 'LOAD_PROFILE':
+            return {...state,...action.userProfile};
         default:
             return state;
     }

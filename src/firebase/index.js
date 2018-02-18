@@ -44,4 +44,4 @@
         .then((data) => data.forEach((datum) => console.log(datum.data())))
         .catch((error) => console.log("Error writing document: ",error));
 */
-  export { firebase, googleAuthProvider, database as default };
+  export { firebase, googleAuthProvider,db, database as default };

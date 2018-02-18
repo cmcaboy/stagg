@@ -1,9 +1,38 @@
 import uuid from 'uuid';
-import firebase from '../firebase';
+import {db} from '../firebase';
+import 'firebase/firestore';
 
-const db = firebase.firestore();
+//const db = firebase.firestore();
+
+export const startLoadProfile = (uid) => {
+    return (dispatch,getState) => {
+        db.collection(`users`).doc(`${uid}`).get()
+            .then((data) => {
+                //console.log('profile: ',profile);
+                const profile = data.data();
+                const userProfile = {
+                    name: profile.name,
+                    profilePic: profile.profilePic,
+                    age: profile.age,
+                    work: profile.work,
+                    school: profile.school,
+                    description: profile.description,
+                    gender: profile.gender
+                }  
+                dispatch(loadProfile(uid,userProfile))
+            })
+            .catch((error) => console.log("Error obtaining document: ",error));
+    }
+}
+
+export const loadProfile = (uid,userProfile) => ({
+    type: 'LOAD_PROFILE',
+    uid,
+    userProfile
+});
 
 export const startNewUser = (newUserData) => {
+    return (dispatch,getState) => {
     const {
         uid = uuid(),
         age = 25,
@@ -18,11 +47,10 @@ export const startNewUser = (newUserData) => {
     const newUser = { age, name, work, school, description, profilePic, ancillaryPics};
 
     db.collection("users").doc(uid).set({...newUser})
-        .then(() => newUser(newUser))
+        .then(() => dispatch(newUser(newUser)))
         .catch((error) => console.log("Error writing document: ",error))
+    }
 }
-
-// New User - still pending
 export const newUser = (newUserData) => ({
         type: 'NEW_USER',
         newUser: {
@@ -31,10 +59,13 @@ export const newUser = (newUserData) => ({
         }
 });
 
-export const startChangeAge = (id,age) => {
-    db.collection("users").doc(id).set({age})
-        .then(() => changeAge(age))
-        .catch((error) => console.log("Error writing document: ",error))
+export const startChangeAge = (age) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection("users").doc(id).update({age})
+            .then(() => dispatch(changeAge(age)))
+            .catch((error) => console.log("Error writing document: ",error))
+    }
 }
 
 // Change Age
@@ -46,10 +77,13 @@ export const changeAge = (age) => ({
 });
 
 
-export const startProfilePicture = (id,profilePic) => {
-    db.collection("users").doc(id).set({profilePic})
-        .then(() => changeProfilePicture(profilePic))
-        .catch((error) => console.log("Error writing document: ",error))
+export const startProfilePicture = (profilePic) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection("users").doc(id).update({profilePic})
+            .then(() => dispatch(changeProfilePicture(profilePic)))
+            .catch((error) => console.log("Error writing document: ",error))
+    }
 }
 
 export const changeProfilePicture = (profilePic) => ({
@@ -59,10 +93,13 @@ export const changeProfilePicture = (profilePic) => ({
     }
 });
 
-export const startChangeAncillaryPictures = (id,urlList) => {
-    db.collection("users").doc(id).set({urlList})
-        .then(() => changeAncillaryPictures(urlList))
-        .catch((error) => console.log("Error writing document: ",error))
+export const startChangeAncillaryPictures = (urlList) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection("users").doc(id).update({urlList})
+            .then(() => dispatch(changeAncillaryPictures(urlList)))
+            .catch((error) => console.log("Error writing document: ",error))
+    }
 }
 
 export const changeAncillaryPictures = (urlList) => ({
@@ -72,10 +109,15 @@ export const changeAncillaryPictures = (urlList) => ({
     }
 });
 
-export const startChangeName = (id,name) => {
-    db.collection("users").doc(id).set({name})
-        .then(() => changeName(name))
-        .catch((error) => console.log("Error writing document: ",error))
+export const startChangeName = (name) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        console.log('id: ',id);
+        console.log('current state: ',getState());
+        db.collection("users").doc(id).update({name})
+            .then(() => dispatch(changeName(name)))
+            .catch((error) => console.log("Error writing document: ",error))
+    }
 }
 
 export const changeName = (name) => ({
@@ -85,10 +127,13 @@ export const changeName = (name) => ({
     }
 });
 
-export const startChangeSchool = (id,school) => {
-    db.collection("users").doc(id).set({school})
-        .then(() => changeSchool(school))
-        .catch((error) => console.log("Error writing document: ",error))
+export const startChangeSchool = (school) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection("users").doc(id).update({school})
+            .then(() => dispatch(changeSchool(school)))
+            .catch((error) => console.log("Error writing document: ",error))
+    }
 }
 
 export const changeSchool = (school) => ({
@@ -98,10 +143,13 @@ export const changeSchool = (school) => ({
     }
 });
 
-export const startChangeWork = (id,work) => {
-    db.collection("users").doc(id).set({work})
-        .then(() => changeWork(work))
-        .catch((error) => console.log("Error writing document: ",error))
+export const startChangeWork = (work) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection("users").doc(id).update({work})
+            .then(() => dispatch(changeWork(work)))
+            .catch((error) => console.log("Error writing document: ",error))
+    }
 }
 
 export const changeWork = (work) => ({
@@ -111,10 +159,13 @@ export const changeWork = (work) => ({
     }
 });
 
-export const startChangeDescription = (id,description) => {
-    db.collection("users").doc(id).set({description})
-        .then(() => changeDescription(description))
-        .catch((error) => console.log("Error writing document: ",error))
+export const startChangeDescription = (description) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection("users").doc(id).update({description})
+            .then(() => dispatch(changeDescription(description)))
+            .catch((error) => console.log("Error writing document: ",error))
+    }
 }
 
 export const changeDescription = (description) => ({

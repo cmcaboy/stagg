@@ -1,5 +1,6 @@
 import {firebase} from '../firebase';
 import Expo from 'expo';
+import postLogin from '../loaders/postLogin'
 
 export const startFacebookLogin = () => {
     loading(true);
@@ -16,7 +17,9 @@ export const startFacebookLogin = () => {
             const provider = firebase.auth.FacebookAuthProvider;
             const credential = provider.credential(token);
             firebase.auth().signInWithCredential(credential)
-                .then(() =>  dispatch(login(firebase.auth().currentUser.uid)))
+                // Once the user is logged in, run the post login function,
+                // which will setup the user's application state
+                .then(() =>  postLogin(firebase.auth().currentUser.uid,token,dispatch))
                 .catch(() => dispatch(failedLogin('Login Failed')));
             // Issue login with unique userid as per firebase auth
            

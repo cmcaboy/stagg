@@ -5,6 +5,8 @@ import Leaderboard from '../components/Leaderboard';
 import Stagg from '../components/Stagg';
 import Matches from '../components/Matches';
 import Messenger from '../components/Messenger';
+import EditSettings from '../components/EditSettings';
+import EditProfile from '../components/EditProfile';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import {Platform} from 'react-native';
 
@@ -16,6 +18,9 @@ const Tabs = TabNavigator({
             tabBarIcon: ({ tintColor }) => <Ionicons name='ios-bookmarks' size={30} color={tintColor} />
           }
     },
+    // Taking the leaderboard out for now. I would prefer to have 3 tabs rather than 4
+    // as it is more aesthetically pleasing.
+    /*
     Leaderboard: {
         screen: Leaderboard,
         navigationOptions: {
@@ -23,6 +28,7 @@ const Tabs = TabNavigator({
             tabBarIcon: ({ tintColor }) => <FontAwesome name='plus-square' size={30} color={tintColor} />
           }
     },
+    */
     Stagg: {
         screen: Stagg,
         navigationOptions: {
@@ -63,6 +69,12 @@ const MainNavigator = StackNavigator({
     },
     Messenger: {
         screen: Messenger
+    },
+    EditSettings: {
+        screen: EditSettings
+    },
+    EditProfile: {
+        screen: EditProfile
     }
 });
 

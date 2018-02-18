@@ -1,5 +1,6 @@
 
 const defaultAuthReducer = {
+    uid: null,
     email: '',
     password: '',
     error: '',
@@ -32,7 +33,7 @@ const authReducer = (state = {}, action) => {
         case 'LOGIN':
             return {
                 ...defaultAuthReducer,
-                uid: action.uid,
+                uid: action.uid
             };
         case 'LOGOUT':
             return {...defaultAuthReducer};
