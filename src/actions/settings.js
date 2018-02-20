@@ -1,16 +1,17 @@
 import firebase from '../firebase';
 import {db} from '../firebase';
 
-export const startInitialSettings = (id,initialSettingsData) => {
+export const startInitialSettings = (initialSettingsData) => {
     return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
         const {
-            agePreference = 'aroundSameAge',
+            agePreference = [18,35],
             distance = 20,
             sendNotifications = true
         } = initialSettingsData;
         const initialSettings = { agePreference, distance, sendNotifications};
 
-        db.collection("users").doc(id).set({...initialSettings})
+        db.collection("users").doc(id).update({...initialSettings})
             .then(() => dispatch(initialSettings(initialSettings)))
             .catch((error) => console.log("Error writing document: ",error))
     }
@@ -46,11 +47,12 @@ export const loadSettings = (id,userSettings) => ({
     id
 })
 
-export const startChangeAgePreference = (id,agePreference) => {
-    return (dispatch) => {
-    db.collection("users").doc(id).set({agePreference})
-        .then(() => dispatch(changeAgePreference(agePreference)))
-        .catch((error) => console.log("Error writing document: ",error))
+export const startChangeAgePreference = (agePreference) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection("users").doc(id).update({agePreference})
+            .then(() => dispatch(changeAgePreference(agePreference)))
+            .catch((error) => console.log("Error writing document: ",error))
     }
 }
 
@@ -61,11 +63,12 @@ export const changeAgePreference = (agePreference) => ({
     }
 });
 
-export const startChangeDistance = (id,distance) => {
-    return (dispatch) => {
-    db.collection("users").doc(id).set({distance})
-        .then(() => changeDistance(distance))
-        .catch((error) => console.log("Error writing document: ",error))
+export const startChangeDistance = (distance) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection("users").doc(id).update({distance})
+            .then(() => dispatch(changeDistance(distance)))
+            .catch((error) => console.log("Error writing document: ",error))
     }
 }
 
@@ -76,11 +79,12 @@ export const changeDistance = (distance) => ({
     }
 });
 
-export const startChangeNotification = (id,notification) => {
-    return (dispatch) => {
-    db.collection("users").doc(id).set({notification})
-        .then(() => changeNotification(notification))
-        .catch((error) => console.log("Error writing document: ",error))
+export const startChangeNotification = (notification) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection("users").doc(id).update({notification})
+            .then(() => dispatch(changeNotification(notification)))
+            .catch((error) => console.log("Error writing document: ",error))
     }
 }
 

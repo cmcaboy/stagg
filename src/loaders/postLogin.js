@@ -2,6 +2,7 @@ import {db} from '../firebase';
 import 'firebase/firestore';
 import {dispatch} from 'react-redux';
 import {startLoadProfile,startNewUser} from '../actions/profile';
+import {startInitialSettings} from '../actions/settings';
 import {startLoadSettings} from '../actions/settings';
 import {startLoadLists} from '../actions/matchList';
 
@@ -31,8 +32,14 @@ export const postLogin = (uid,token,dispatch) => {
           gender: responseData.gender,
           uid
         }
+        const initialSettings = {
+          sendNotifications: true,
+          distance: 20,
+          agePreference: [18,35]
+        }
         // startNewUser will add the new user to Firestore
         dispatch(startNewUser(newUser));
+        dispatch(startInitialSettings(initialSettings))
       }
       // Load the client's profile
       dispatch(startLoadProfile(uid));

@@ -1,21 +1,22 @@
 const settingsReducerDefaultState = {
-    agePreference: 'aroundSameAge',     // Can be aroundSameAge, sameAge, older, younger, ageAgnostic
+    agePreference: [18,35],     
     distance: 20,                       // distance (in miles radius)
     sendNotifications: true
 };
 
 const settingsReducer = (state = settingsReducerDefaultState,action = {}) => {
+    console.log('action: ',action);
     switch(action.type) {
         case 'SET_INITIAL_SETTINGS':
             return action.initialSettings;
         case 'LOAD_SETTINGS':
-            return {...state,...userSettings};
+            return {...state,...action.userSettings};
         case 'CHANGE_AGE_PREFERENCE':
-            return {...state,...updates};
+            return {...state,...action.updates};
         case 'CHANGE_DISTANCE':
-            return {...state,...updates};
+            return {...state,...action.updates};
         case 'CHANGE_NOTIFICATION':
-            return {...state,...updates};
+            return {...state,...action.updates};
         default:
             return state;
     }
