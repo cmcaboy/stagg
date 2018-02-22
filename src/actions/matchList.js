@@ -101,17 +101,28 @@ export const match = (id) => ({
 });
 
 // Will probably move this to the backend and use an HTTP request instead
-export const startRequeue = (id) => {
+export const startNewQueue = (id) => {
     // For now, I will just grab all users, but I need to figure out how to 
     // exclude those that are already liked or disliked.
     return (dispatch) => {
         db.collection(`users`).get()
-            .then((queueList) => dispatch(requeue(queueList.data())))
+            .then((queueList) => {
+                // Firestore document id's can be obtained with the .id property.
+                const newList = queueList.docs.map(doc => {
+                    const docData = doc.data();
+                    return {
+                        id:doc.id,
+                        name: docData.name,
+                        profilePic: docData.profilePic
+                    }
+                });
+                dispatch(newqueue(newList))
+            })
             .catch((error) => console.log("Error writing document: ",error));
     }
 };
-export const requeue = (newQueue) => ({
-        type: 'REQUEUE',
+export const newqueue = (newQueue) => ({
+        type: 'NEW_QUEUE',
         newQueue
 });
 

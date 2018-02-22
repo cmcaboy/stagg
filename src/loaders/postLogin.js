@@ -4,7 +4,7 @@ import {dispatch} from 'react-redux';
 import {startLoadProfile,startNewUser} from '../actions/profile';
 import {startInitialSettings} from '../actions/settings';
 import {startLoadSettings} from '../actions/settings';
-import {startLoadLists} from '../actions/matchList';
+import {startLoadLists,startNewQueue} from '../actions/matchList';
 
 export const postLogin = (uid,token,dispatch) => {
   // Search firestore to see if uid is registered.
@@ -44,7 +44,8 @@ export const postLogin = (uid,token,dispatch) => {
       // Load the client's profile
       dispatch(startLoadProfile(uid));
       dispatch(startLoadSettings(uid));
-      dispatch(startLoadLists(uid));
+      dispatch(startLoadLists(uid)); // Like, Dislike, Matches
+      dispatch(startNewQueue(uid));   // Potential List
     })
     .catch((error) => console.log("FB load - Error getting document: ",error))
 

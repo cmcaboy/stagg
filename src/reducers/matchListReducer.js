@@ -2,10 +2,11 @@ const matchListReducerDefaultState = {
     matches: [],    // id list of matches
     likes: [],      // id list of likes
     dislikes: [],   // id list of dislikes
-    queue: [{}]    // object list of potential matches, which includes pic, name, description, and anything else required for a render
+    queue: []    // object list of potential matches, which includes pic, name, description, and anything else required for a render
 };
 
 const matchListReducer = (state = matchListReducerDefaultState,action = {}) => {
+    console.log(action);
     switch(action.type) {
         case 'LOAD_LISTS':
             return {
@@ -51,11 +52,17 @@ const matchListReducer = (state = matchListReducerDefaultState,action = {}) => {
                 matches: [...state.matches, action.match.id]
             };
         case 'REQUEUE':
-            // Fill queue with new list
+            // Append new potential matches
             return {
                 ...state,
                 queue: [...state.queue,...action.newQueue]
             };
+        case 'NEW_QUEUE':
+            // Fill queue with new list
+            return {
+                ...state,
+                queue: [...action.newQueue]
+            }
         default:
             return state;
     } // ends switch
