@@ -1,7 +1,10 @@
+import firebase from '../firebase';
 import {db} from '../firebase';
 
 export const startLoadLists = (uid) => {
+    console.log('start load lists');
     return (dispatch,getState) => {
+        console.log('in load lists');
 
         db.collection(`users/${uid}/likes`).get()
             .then((data) => {
@@ -58,12 +61,15 @@ export const matchList = (matchList) => ({
     }
 });
 
-export const startLike = (id, likedId) => {
-    return (dispatch) => {
-        db.collection(`users/${id}/likes`).set({likedId})
+export const startLike = (likedId) => {
+    console.log('start like: ',likedId);
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection(`users/${id}/likes`).add({likedId})
             .then(() => dispatch(like(likedId)))
             .catch((error) => console.log("Error writing document: ",error));
-    }
+    
+        }
 }
 export const like = (id) => ({
         type: 'LIKE',
@@ -72,9 +78,11 @@ export const like = (id) => ({
         }
 });
 
-export const startDislike = (id, dislikedId) => {
-    return (dispatch) => {
-        db.collection(`users/${id}/dislikes`).set({dislikedId})
+export const startDislike = (dislikedId) => {
+    return (dispatch,getState) => {
+        console.log('test');
+        const id = getState().authReducer.uid;
+        db.collection(`users/${id}/dislikes`).add({dislikedId})
             .then(() => dispatch(dislike(dislikedId)))
             .catch((error) => console.log("Error writing document: ",error));
     }
@@ -86,9 +94,10 @@ export const dislike = (id) => ({
         }
 });
 
-export const startMatch = (id, matchId) => {
-    return (dispatch) => {
-        db.collection(`users/${id}/matches`).set({matchId})
+export const startMatch = (matchId) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection(`users/${id}/matches`).add({matchId})
             .then(() => dispatch(match(matchId)))
             .catch((error) => console.log("Error writing document: ",error));
     }

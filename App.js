@@ -10,6 +10,8 @@ import {store,persistor} from './src/store';
 import { firebase } from './src/firebase';
 import { login, logout } from './src/actions/auth';
 
+
+
 function UdaciStatusBar ({backgroundColor, ...props}) {
   return (
     <View style={{ backgroundColor, height: Constants.statusBarHeight }}>
