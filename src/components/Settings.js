@@ -18,10 +18,12 @@ const Settings = (props) => {
                 </View>
             </View>
             <View style={styles.options}>
-                <TouchableOpacity onPress={() => props.navigation.navigate('EditSettings')}><Text style={styles.optionText}>
+                <TouchableOpacity onPress={() => props.navigation.navigate('EditSettings')}>
+                <Text style={styles.optionText}>
                     Settings
                 </Text></TouchableOpacity>
-                <TouchableOpacity onPress={() => props.navigation.navigate('EditProfile')}><Text style={styles.optionText}>
+                <TouchableOpacity onPress={() => props.navigation.navigate('EditProfile')}>
+                <Text style={styles.optionText}>
                     Edit Info
                 </Text></TouchableOpacity>
             </View>

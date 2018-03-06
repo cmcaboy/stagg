@@ -6,9 +6,34 @@ const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
 const db = admin.firestore();
 
-exports.newQueue = functions.https.onRequest((req, res) => {
+exports.newQueue = functions.https.onRequest(async (req, res) => {
 
   const id = req.id;
+
+  let queryList = await db.collection(`users`).get();
+  const list = queryList.docs.map((doc) => {
+    const docData = doc.data();
+    return {
+      id:doc.id,
+      name: docData.name,
+      profilePic: docData.profilePic
+    }
+  });
+  let likeList = await db.collection(`users/${id}/likes`);
+  const likes = likeList.docs.map((doc) => {
+    const docData = doc.data();
+    return doc.id;
+  });
+  let dislikeList = await db.collection(`users/${id}/dislikes`)
+  const dislikes = dislikeList.docs.map((doc) => {
+    const docData = doc.data();
+    return doc.id;
+  });
+
+  const excludeList = [...like,..dislike];
+
+  return [...list].filter(x => !excludeList.has(x.id))
+
 /*
   db.collection(`users`).get()
     .then((queueListData) => {
@@ -67,58 +92,6 @@ exports.createNewQueue = functions.https.onRequest((req,res) => {
     })
 });
 
-// Execute after a like. check to see if the liked user also like the user.
-exports.onLike = functions.firestore
-  .document(`users/{userId}/likes/{likeId}`)
-  .onCreate((event) => {
-    const data = event.data.data();
-    const userId = event.params.userId;
-    const likedId = data.likedId;
-    db.collection(`users/${likedId}/likes`).get()
-      .then((likeList) => {
-        return likeList.docs.map((doc) => {
-          const docData = doc.data();
-          if(docData.likedId === userId) {
-            createMatch(userId,likedId);
-          }
-        });
-
-      }) // end .then
-      .catch((error) => console.log('error',error))
-  });
-
-const createMatch = (a,b) => {
-  // create a match between userId's a and b
-  
-  const ref = db.collection(`matches`).doc();
-  
-  ref.set({
-    id: ref.id,
-    userA:a,
-    userB:b,
-    matchTime: Date.now()
-  });
-
-  db.collection(`users`).doc(`${a}`).get()
-    .then((snapshot) => {
-      const data = snapshot.data();
-      return db.collection(`users/${b}/matches`).doc(`${a}`).set({
-        matchId:ref.id
-      })
-    })
-    .catch((error) => console.log('error: ',error))
-  
-  
-  db.collection(`users`).doc(`${b}`).get()
-    .then((snapshot) => {
-      const data = snapshot.data();
-      return db.collection(`users/${a}/matches`).doc(`${b}`).set({
-        matchId:ref.id
-      })
-    })
-    .catch((error) => console.log('error: ',error))
-  
-  .catch((error) => console.log('error: ',error))
-}
+const temp = () => {}
 
 

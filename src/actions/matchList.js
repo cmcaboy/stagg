@@ -2,9 +2,7 @@ import firebase from '../firebase';
 import {db} from '../firebase';
 
 export const startLoadLists = (uid) => {
-    console.log('start load lists');
     return (dispatch,getState) => {
-        console.log('in load lists');
 
         db.collection(`users/${uid}/likes`).get()
             .then((data) => {
@@ -20,7 +18,18 @@ export const startLoadLists = (uid) => {
             .catch((error) => console.log("Error writing document: ",error));
         db.collection(`users/${uid}/matches`).get()
             .then((data) => {
-                const matchList = data.data();
+                const matchList = data.docs.map(async (doc) => {
+                    const matchIdData = doc.data();
+                    const snapshot = await db.collection(`users`).doc(`${doc.id}`).get()
+                    docData = snapshot.data();
+                    return {
+                      id:doc.id,
+                      name: docData.name,
+                      profilePic: docData.profilePic,
+                      matchId: matchIdData.matchId
+                    }
+                  });
+                //const matchList = data.data()
                 dispatch(matchList(matchList))
             })
             .catch((error) => console.log("Error writing document: ",error));
@@ -62,7 +71,6 @@ export const matchList = (matchList) => ({
 });
 
 export const startLike = (likedId) => {
-    console.log('start like: ',likedId);
     return (dispatch,getState) => {
         const id = getState().authReducer.uid;
         db.collection(`users/${id}/likes`).add({likedId})
@@ -80,7 +88,6 @@ export const like = (id) => ({
 
 export const startDislike = (dislikedId) => {
     return (dispatch,getState) => {
-        console.log('test');
         const id = getState().authReducer.uid;
         db.collection(`users/${id}/dislikes`).add({dislikedId})
             .then(() => dispatch(dislike(dislikedId)))
@@ -111,25 +118,47 @@ export const match = (id) => ({
 
 // Will probably move this to the backend and use an HTTP request instead
 export const startNewQueue = (id) => {
-    // For now, I will just grab all users, but I need to figure out how to 
-    // exclude those that are already liked or disliked.
-    return (dispatch) => {
-        db.collection(`users`).get()
-            .then((queueList) => {
-                // Firestore document id's can be obtained with the .id property.
-                const newList = queueList.docs.map(doc => {
-                    const docData = doc.data();
-                    return {
-                        id:doc.id,
-                        name: docData.name,
-                        profilePic: docData.profilePic
-                    }
-                });
-                dispatch(newqueue(newList))
-            })
-            .catch((error) => console.log("Error writing document: ",error));
+    // query executed via firebase cloud functions
+    return async (dispatch) => {
+        /*
+        const url = `https://us-central1-stagg-test.cloudfunctions.net/newQueue?id=${id}`
+        fetch(url)
+            .then((queryList) => queryList.json())
+            .then((queryList) => dispatch(newqueue(queryList)))
+            .catch((error) => console.log("Error fetching endpoint: ",error))
+        }
+        */
+       let queryList = await db.collection(`users`).get();
+       let list = queryList.docs.map((doc) => {
+         const docData = doc.data();
+         return {
+           id:doc.id,
+           name: docData.name,
+           profilePic: docData.profilePic
+         }
+       });
+       let likeList = await db.collection(`users/${id}/likes`).get();
+       const likes = likeList.docs.map((doc) => {
+           const docData = doc.data();
+           return docData.likedId;
+        });
+        console.log('like list -- ',likes);
+        let dislikeList = await db.collection(`users/${id}/dislikes`).get();
+        const dislikes = dislikeList.docs.map((doc) => {
+            const docData = doc.data();
+            return docData.dislikedId;
+        });
+        console.log('dislike list -- ',dislikes);
+        
+        const excludeList = new Set([...likes,...dislikes]);
+        list = new Set([...list]);
+        
+        console.log('exclude list -- ',excludeList);
+     
+       dispatch(newqueue([...list].filter(x => !excludeList.has(x.id))));
     }
 };
+
 export const newqueue = (newQueue) => ({
         type: 'NEW_QUEUE',
         newQueue

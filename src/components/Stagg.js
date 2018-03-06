@@ -180,7 +180,7 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 const mapStateToProps = (state,ownProps) => {
-    console.log('state at stagg -- ',state);
+    //console.log('state at stagg -- ',state);
     return {
         prospectiveList: state.matchListReducer.queue,
         likeList: state.matchListReducer.likeList,

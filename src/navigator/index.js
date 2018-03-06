@@ -36,10 +36,10 @@ const Tabs = TabNavigator({
             tabBarIcon: ({ tintColor }) => <Ionicons name='ios-bookmarks' size={30} color={tintColor} />
           }
     },
-    Messenger: {
-        screen: Messenger,
+    Matches: {
+        screen: Matches,
         navigationOptions: {
-            tabBarLabel: 'Messenger',
+            tabBarLabel: 'Matches',
             tabBarIcon: ({ tintColor }) => <Ionicons name='ios-bookmarks' size={30} color={tintColor} />
           }
     }
