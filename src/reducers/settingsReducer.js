@@ -5,7 +5,7 @@ const settingsReducerDefaultState = {
 };
 
 const settingsReducer = (state = settingsReducerDefaultState,action = {}) => {
-    console.log('action: ',action);
+    //console.log('action: ',action);
     switch(action.type) {
         case 'SET_INITIAL_SETTINGS':
             return action.initialSettings;

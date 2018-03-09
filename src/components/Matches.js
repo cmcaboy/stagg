@@ -7,6 +7,9 @@ import {
     Platform, 
     ScrollView 
 } from 'react-native';
+import {connect} from 'react-redux';
+import {CirclePicture} from './common';
+import MatchListItem from './MatchListItem';
 
 class Matches extends Component {
     constructor(props) {
@@ -14,29 +17,41 @@ class Matches extends Component {
     }
     render() {
         return (
-            <View>
-                <ScrollView
-                    horizontal={true}
-                >
+            <View style={styles.matchContainer}>
+                <View style={styles.newMatchesContainer}>
+                    <Text>New Matches</Text>
+                    <ScrollView
+                        horizontal={true}
+                    >
                     {this.props.matches.map((match) => {
                         return (
                             <TouchableOpacity 
-                                onPress={() => props.navigation.navigate('Messenger',{matchId:match.matchId,id:this.props.id})}
+                                onPress={() => this.props.navigation.navigate('Messenger',{matchId:match.matchId,id:this.props.id})}
+                                key={match.id}
                             >
-                                <CirclePicture imageURL={match.profilePic} picSize="small"/>
+                                <View style={styles.newMatch}>
+                                    <CirclePicture imageURL={match.profilePic} picSize="small"/>
+                                    <Text>{match.name}</Text>
+                                </View>
                             </TouchableOpacity>
                         )
                     })}
-                </ScrollView>
-                <ScrollView>
-                    {this.props.matches.map((match) => {
+                    </ScrollView>
+                </View>
+                <View style={styles.messagesContainer}>
+                    <Text>Messages</Text>
+                    <ScrollView>
+                        {this.props.matches.map((match) => (
                         <MatchListItem 
+                            key={match.id}
                             name={match.name} 
                             picture={match.profilePic}
-                            onPress={() => props.navigation.navigate('Messenger',{matchId:match.matchId,id:this.props.id})}
+                            lastMessage={match.lastMessage}
+                            onPress={() => this.props.navigation.navigate('Messenger',{matchId:match.matchId,id:this.props.id})}
                         />
-                    })}
-                </ScrollView>
+                    ))}
+                    </ScrollView>
+                </View>
             </View>
         )
     }
@@ -44,7 +59,7 @@ class Matches extends Component {
 /*
 const Matches = (props) => {
     return (
-        <View style={styles.matchesContainer}>
+        <View style={styles.matchContainer}>
             <Text>
                 Stagg Page
             </Text>
@@ -53,14 +68,29 @@ const Matches = (props) => {
 }
 */
 const styles = StyleSheet.create({
-    matchesContainer: {
+    matchContainer: {
         flex: 1,
+        marginLeft: 10,
+        marginTop:5
+
+    },
+    newMatchesContainer: {
+        flex: 1
+    },
+    messagesContainer: {
+        flex: 4
+    },
+    newMatch: {
+        margin: 5,
+        display:'flex',
         justifyContent: 'flex-start',
-        alignItems: 'stretch'
+        alignItems: 'center',
+        flexDirection:'column'
     }
 });
 
-const mapStateToProps(state,ownProps) {
+const mapStateToProps = (state,ownProps) => {
+    console.log('state at matches -- ',state);
     return {
         matches: state.matchListReducer.matches,
         id: state.authReducer.uid

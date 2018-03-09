@@ -4,36 +4,21 @@ import {db} from '../firebase';
 export const startLoadLists = (uid) => {
     return (dispatch,getState) => {
 
-        db.collection(`users/${uid}/likes`).get()
-            .then((data) => {
-                const likeList = data.data();
-                dispatch(likeList(likeList))
-            })
-            .catch((error) => console.log("Error writing document: ",error));
-        db.collection(`users/${uid}/dislikes`).get()
-            .then((data) => {
-                const disLikeList = data.data();
-                dispatch(dislikeList(dislikeList))
-            })
-            .catch((error) => console.log("Error writing document: ",error));
-        db.collection(`users/${uid}/matches`).get()
-            .then((data) => {
-                const matchList = data.docs.map(async (doc) => {
-                    const matchIdData = doc.data();
-                    const snapshot = await db.collection(`users`).doc(`${doc.id}`).get()
-                    docData = snapshot.data();
-                    return {
-                      id:doc.id,
-                      name: docData.name,
-                      profilePic: docData.profilePic,
-                      matchId: matchIdData.matchId
-                    }
-                  });
-                //const matchList = data.data()
-                dispatch(matchList(matchList))
-            })
-            .catch((error) => console.log("Error writing document: ",error));
-        }
+        fetch(`https://us-central1-stagg-test.cloudfunctions.net/getLikes?uid=${uid}`)
+            .then((data) => data.json())
+            .then((data) => dispatch(likeList(data)))
+            .catch((error) => console.log("Error fetching endpoint: ",error))
+
+        fetch(`https://us-central1-stagg-test.cloudfunctions.net/getDislikes?uid=${uid}`)
+            .then((data) => data.json())
+            .then((data) => dispatch(dislikeList(data)))
+            .catch((error) => console.log("Error fetching endpoint: ",error))
+        
+        fetch(`https://us-central1-stagg-test.cloudfunctions.net/getMatches?uid=${uid}`)
+            .then((matchListData) => matchListData.json())
+            .then((matchListData) => dispatch(matchList(matchListData)))
+            .catch((error) => console.log("Error fetching endpoint: ",error))
+    }
 }
 
 // Not currently used
@@ -59,15 +44,11 @@ export const likeList = (likeList) => ({
 });
 export const dislikeList = (dislikeList) => ({
     type: 'DISLIKE_LIST',
-    dislikeList: {
-        dislikeList
-    }
+    dislikeList
 });
 export const matchList = (matchList) => ({
     type: 'MATCH_LIST',
-    matchList: {
-        matchList
-    }
+    matchList
 });
 
 export const startLike = (likedId) => {
@@ -142,18 +123,14 @@ export const startNewQueue = (id) => {
            const docData = doc.data();
            return docData.likedId;
         });
-        console.log('like list -- ',likes);
         let dislikeList = await db.collection(`users/${id}/dislikes`).get();
         const dislikes = dislikeList.docs.map((doc) => {
             const docData = doc.data();
             return docData.dislikedId;
         });
-        console.log('dislike list -- ',dislikes);
         
-        const excludeList = new Set([...likes,...dislikes]);
+        const excludeList = new Set([...likes,...dislikes,id]);
         list = new Set([...list]);
-        
-        console.log('exclude list -- ',excludeList);
      
        dispatch(newqueue([...list].filter(x => !excludeList.has(x.id))));
     }

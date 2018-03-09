@@ -15,17 +15,17 @@ const matchListReducer = (state = matchListReducerDefaultState,action = {}) => {
         case 'LIKE_LIST':
             return {
                 ...state,
-                likes: likeList
+                likes: action.likeList
             };
         case 'DISLIKE_LIST':
             return {
                 ...state,
-                dislikes: dislikeList
+                dislikes: action.dislikeList
             };
         case 'MATCH_LIST':
             return {
                 ...state,
-                matches: matchList
+                matches: action.matchList
             };
         case 'LIKE':
             // remove entry from queue list

@@ -34,6 +34,118 @@ exports.newQueue = functions.https.onRequest((req, res) => {
 */
 });
 
+exports.onMessageAdd = functions.firestore
+  .document(`matches/{matchId}/messages/{messageId}`)
+  .onCreate((event) => {
+    const data = event.data.data();
+    console.log('onCreate Message');
+  });
+
+
+exports.getMatches = functions.https.onRequest((req,res) => {
+  const id = req.query.uid;
+
+  // Takes in an id
+  // Outputs that's id's matches
+  // The matches come back with their unique id, their name, and their profile picture
+  
+  db.collection(`users`).get()
+            .then((data) => {
+                let userList = [];
+                data.docs.forEach((doc) => {
+                    const userData = doc.data();
+                    userList[doc.id] = {
+                      name: userData.name,
+                      profilePic: userData.profilePic
+                    }
+                });
+                return db.collection(`users/${id}/matches`).get()
+                  .then((matchData) => {
+                    const matchList = matchData.docs.map((matchData) => {
+                      const match = matchData.data();
+                        return {
+                          id:matchData.id,
+                          name: userList[matchData.id].name,
+                          profilePic: userList[matchData.id].profilePic,
+                          matchId: match.matchId,
+                          lastMessage: match.lastMessage
+                        }
+                    })
+                    return res.send(matchList);
+                  })
+                  .catch((error) => console.log("Error writing document: ",error));
+            })
+            .catch((error) => console.log("Error writing document: ",error));
+});
+
+exports.getLikes = functions.https.onRequest((req,res) => {
+  const id = req.query.uid;
+
+  // Takes in an id
+  // Outputs that's id's matches
+  // The matches come back with their unique id, their name, and their profile picture
+  
+  db.collection(`users`).get()
+            .then((data) => {
+                let userList = [];
+                data.docs.forEach((doc) => {
+                    const userData = doc.data();
+                    userList[doc.id] = {
+                      name: userData.name,
+                      profilePic: userData.profilePic
+                    }
+                });
+                return db.collection(`users/${id}/likes`).get()
+                .then((likeData) => {
+                  const likeList = likeData.docs.map((likeData) => {
+                    const like = likeData.data();
+                    return {
+                      id:like.likedId,
+                      name: userList[like.likedId].name,
+                      profilePic: userList[like.likedId].profilePic
+                    }
+                  })
+                  return res.send(likeList);
+                  })
+                  .catch((error) => console.log("Error writing document: ",error));
+            })
+            .catch((error) => console.log("Error writing document: ",error));
+});
+
+exports.getDislikes = functions.https.onRequest((req,res) => {
+  const id = req.query.uid;
+
+  // Takes in an id
+  // Outputs that's id's matches
+  // The matches come back with their unique id, their name, and their profile picture
+  
+  db.collection(`users`).get()
+            .then((data) => {
+                let userList = [];
+                data.docs.forEach((doc) => {
+                    const userData = doc.data();
+                    userList[doc.id] = {
+                      name: userData.name,
+                      profilePic: userData.profilePic
+                    }
+                });
+                return db.collection(`users/${id}/dislikes`).get()
+                  .then((dislikeData) => {
+                    const dislikeList = dislikeData.docs.map((dislikeData) => {
+                      const dislike = dislikeData.data();
+                        return {
+                          id:dislike.dislikedId,
+                          name: userList[dislike.dislikedId].name,
+                          profilePic: userList[dislike.dislikedId].profilePic
+                        }
+                    })
+                    return res.send(dislikeList);
+                  })
+                  .catch((error) => console.log("Error writing document: ",error));
+            })
+            .catch((error) => console.log("Error writing document: ",error));
+});
+
 exports.oldNewQueue = functions.https.onRequest((req, res) => {
  
   const id = req.id;
@@ -76,7 +188,7 @@ exports.onLike = functions.firestore
     const likedId = data.likedId;
     db.collection(`users/${likedId}/likes`).get()
       .then((likeList) => {
-        return likeList.docs.map((doc) => {
+        return likeList.docs.forEach((doc) => {
           const docData = doc.data();
           if(docData.likedId === userId) {
             createMatch(userId,likedId);
