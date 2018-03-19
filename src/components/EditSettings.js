@@ -81,7 +81,7 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 const mapStateToProps = (state,ownProps) => {
-  console.log('state -- ',state)
+  //console.log('state -- ',state)
   return {
     agePreference: state.settingsReducer.agePreference,
     distance: state.settingsReducer.distance,

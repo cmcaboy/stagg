@@ -7,17 +7,17 @@ export const startLoadLists = (uid) => {
         fetch(`https://us-central1-stagg-test.cloudfunctions.net/getLikes?uid=${uid}`)
             .then((data) => data.json())
             .then((data) => dispatch(likeList(data)))
-            .catch((error) => console.log("Error fetching endpoint: ",error))
+            .catch((error) => console.log("Error fetching Likes: ",error))
 
         fetch(`https://us-central1-stagg-test.cloudfunctions.net/getDislikes?uid=${uid}`)
             .then((data) => data.json())
             .then((data) => dispatch(dislikeList(data)))
-            .catch((error) => console.log("Error fetching endpoint: ",error))
+            .catch((error) => console.log("Error fetching Dislikes: ",error))
         
         fetch(`https://us-central1-stagg-test.cloudfunctions.net/getMatches?uid=${uid}`)
             .then((matchListData) => matchListData.json())
             .then((matchListData) => dispatch(matchList(matchListData)))
-            .catch((error) => console.log("Error fetching endpoint: ",error))
+            .catch((error) => console.log("Error fetching Matches: ",error))
     }
 }
 
@@ -100,6 +100,7 @@ export const match = (id) => ({
 // Will probably move this to the backend and use an HTTP request instead
 export const startNewQueue = (id) => {
     // query executed via firebase cloud functions
+    //console.log('in startnewQueue: ',id)
     return async (dispatch) => {
         /*
         const url = `https://us-central1-stagg-test.cloudfunctions.net/newQueue?id=${id}`
@@ -109,7 +110,9 @@ export const startNewQueue = (id) => {
             .catch((error) => console.log("Error fetching endpoint: ",error))
         }
         */
-       let queryList = await db.collection(`users`).get();
+
+       const queryList = await db.collection(`users`).where("active","==",1).get()
+
        let list = queryList.docs.map((doc) => {
          const docData = doc.data();
          return {
@@ -131,8 +134,8 @@ export const startNewQueue = (id) => {
         
         const excludeList = new Set([...likes,...dislikes,id]);
         list = new Set([...list]);
-     
-       dispatch(newqueue([...list].filter(x => !excludeList.has(x.id))));
+
+        dispatch(newqueue([...list].filter(x => !excludeList.has(x.id))));
     }
 };
 

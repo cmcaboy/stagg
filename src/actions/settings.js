@@ -1,18 +1,19 @@
 import firebase from '../firebase';
 import {db} from '../firebase';
 
-export const startInitialSettings = (initialSettingsData) => {
+export const startInitialSettings = (initialSettingsData,uid) => {
     return (dispatch,getState) => {
-        const id = getState().authReducer.uid;
+        const id = uid;
         const {
             agePreference = [18,35],
             distance = 20,
             sendNotifications = true
         } = initialSettingsData;
         const initialSettings = { agePreference, distance, sendNotifications};
-
         db.collection("users").doc(id).update({...initialSettings})
-            .then(() => dispatch(initialSettings(initialSettings)))
+            .then(() => {
+                dispatch(initialSettings(initialSettings))
+            })
             .catch((error) => console.log("Error writing document: ",error))
     }
 }
@@ -24,17 +25,16 @@ export const initialSettings = (initialSettingsData) => ({
 });
 
 export const startLoadSettings = (id) => {
+    
     return (dispatch,getState) => {
         db.collection("users").doc(`${id}`).get()
             .then((data) => {
                 const userData = data.data();
-                console.log('userData: ',userData);
                 const userSettings = {
                     distance: userData.distance,
                     agePreference: userData.agePreference,
                     sendNotifications: userData.sendNotifications
                 }
-                console.log('userSettings: ',userSettings);
                 dispatch(loadSettings(id,userSettings));
             }
             )

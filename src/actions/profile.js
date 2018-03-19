@@ -4,6 +4,49 @@ import 'firebase/firestore';
 
 //const db = firebase.firestore();
 
+export const startRemoveProfile = () => {
+    return async (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        console.log('Remove id: ',id)
+        const matchList = await db.collection(`users/${id}/matches`).get()
+        const list = matchList.docs.map((doc) => {
+            const docData = doc.data();
+            return {matchId:docData.matchId}
+        });
+
+        console.log('Match List to Remove: ',list)
+
+        // Remove matches
+        list.map((match) => {
+            console.log('removing matchId: ',match.matchId)
+            db.collection(`matches`).doc(`${match.matchId}`).update({active:0})
+                .then(() => dispatch(removeMatch(match.matchId)))
+                .catch((error) => console.log('error: ',error))
+        })
+        
+        // Remove user profile
+        db.collection(`users`).doc(`${id}`).update({active:0})
+            .then(() => dispatch(removeProfile(id)))
+            .catch(error => console.log('error: ',error))
+    }
+}
+
+export const removeMatch = (id) => ({
+    type: 'REMOVE_MATCH',
+    id
+})
+
+export const removeProfile = (uid) => ({
+    type: 'REMOVE_PROFILE',
+    uid
+})
+
+export const loadProfile = (uid,userProfile) => ({
+    type: 'LOAD_PROFILE',
+    uid,
+    userProfile
+});
+
 export const startLoadProfile = (uid) => {
     return (dispatch,getState) => {
         db.collection(`users`).doc(`${uid}`).get()
@@ -13,6 +56,7 @@ export const startLoadProfile = (uid) => {
                 const userProfile = {
                     name: profile.name,
                     profilePic: profile.profilePic,
+                    ancillaryPics: profile.ancillaryPics,
                     age: profile.age,
                     work: profile.work,
                     school: profile.school,
@@ -25,12 +69,6 @@ export const startLoadProfile = (uid) => {
     }
 }
 
-export const loadProfile = (uid,userProfile) => ({
-    type: 'LOAD_PROFILE',
-    uid,
-    userProfile
-});
-
 export const startNewUser = (newUserData) => {
     return (dispatch,getState) => {
     const {
@@ -41,21 +79,21 @@ export const startNewUser = (newUserData) => {
         school = '',
         description = '',
         profilePic = '',
-        ancillaryPics = {},
-        gender = 'male'
+        ancillaryPics = [],
+        gender = 'male',
+        active = 1 // active indicator
     } = newUserData;
-    const newUser = { age, name, work, school, description, profilePic, ancillaryPics};
+    const newUserObj = { uid, age, name, work, school, description, profilePic, ancillaryPics, active};
 
-    db.collection("users").doc(uid).set({...newUser})
-        .then(() => dispatch(newUser(newUser)))
+    db.collection("users").doc(uid).set({...newUserObj})
+        .then(() => dispatch(newUser(newUserObj)))
         .catch((error) => console.log("Error writing document: ",error))
     }
 }
 export const newUser = (newUserData) => ({
         type: 'NEW_USER',
         newUser: {
-            uid,
-            ...newUser
+            ...newUserData
         }
 });
 
@@ -78,6 +116,7 @@ export const changeAge = (age) => ({
 
 
 export const startProfilePicture = (profilePic) => {
+    //console.log('profile pic update: ',profilePic)
     return (dispatch,getState) => {
         const id = getState().authReducer.uid;
         db.collection("users").doc(id).update({profilePic})
@@ -112,8 +151,8 @@ export const changeAncillaryPictures = (urlList) => ({
 export const startChangeName = (name) => {
     return (dispatch,getState) => {
         const id = getState().authReducer.uid;
-        console.log('id: ',id);
-        console.log('current state: ',getState());
+        //console.log('id: ',id);
+        //console.log('current state: ',getState());
         db.collection("users").doc(id).update({name})
             .then(() => dispatch(changeName(name)))
             .catch((error) => console.log("Error writing document: ",error))
@@ -174,3 +213,22 @@ export const changeDescription = (description) => ({
         description
     }
 });
+
+export const startSetCoords = (coords) => {
+    return (dispatch,getState) => {
+        //console.log('coords: ',coords);
+        const id = getState().authReducer.uid;
+        //console.log('id: ',id);
+        //console.log('state: ', getState());
+        db.collection('users').doc(id).update({coords})
+            .then(() => dispatch(setCoords(coords)))
+            .catch((error) => console.log("Error updating coords: ",error))
+    }
+}
+
+export const setCoords = (coords) => ({
+    type: 'SET_COORDS',
+    updates: {
+        coords
+    }
+})

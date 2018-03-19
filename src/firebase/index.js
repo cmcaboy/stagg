@@ -9,7 +9,7 @@
     authDomain: "stagg-test.firebaseapp.com",
     databaseURL: "https://stagg-test.firebaseio.com",
     projectId: "stagg-test",
-    storageBucket: "",
+    storageBucket: "stagg-test.appspot.com",
     messagingSenderId: "236430416072"
   };
   firebase.initializeApp(config);

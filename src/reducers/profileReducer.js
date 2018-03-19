@@ -1,5 +1,5 @@
 const profileReducerDefaultState = {
-    profilePic: '',     // url to profile picture
+    profilePic: 'https://placebear.com/300/200',     // url to profile picture
     ancillaryPics: [],  // array of up to 6 picture urls 
     name: 'Anonymous',  // Name of user
     Age: 25,            // Age of user
@@ -27,8 +27,12 @@ const profileReducer = (state = profileReducerDefaultState,action = {}) => {
             return {...state,...action.updates};
         case 'CHANGE_DESCRIPTION':
             return {...state,...action.updates};
+        case 'SET_COORDS':
+            return {...state,...action.updates};
         case 'LOAD_PROFILE':
             return {...state,...action.userProfile};
+        case 'RESET_STORE':
+            return profileReducerDefaultState
         default:
             return state;
     }

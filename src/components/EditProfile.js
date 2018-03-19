@@ -4,9 +4,12 @@ import {View,
   TouchableOpacity, 
   StyleSheet, 
   Platform,
-  TextInput
+  TextInput,
+  ImageEditor,
+  Image
 } from 'react-native';
-import {CirclePicture,Card,CardSection,Button} from './common';
+import {ImagePicker} from 'expo';
+import {CirclePicture,Card,CardSection,Button,Spinner} from './common';
 import {connect} from 'react-redux';
 import {
   startChangeAge,
@@ -15,8 +18,12 @@ import {
   startChangeName,
   startChangeSchool,
   startChangeWork,
-  startChangeDescription
-} from '../actions/profile'
+  startChangeDescription,
+  startRemoveProfile
+} from '../actions/profile';
+import { startLogout } from '../actions/auth';
+import {firebase} from '../firebase';
+import uploadImage from '../firebase/uploadImage';
 
 class EditProfile extends Component {
   constructor(props) {
@@ -31,26 +38,86 @@ class EditProfile extends Component {
       school: this.props.school,
       work: this.props.work,
       description: this.props.description,
-      age:this.props.age
+      age:this.props.age,
+      image: this.props.profilePic,
+      isLoading: false
     }
   }
-  alterName() {this.setState((prevState) => ({editName:!prevState.editName}))};
-  alterSchool() {this.setState((prevState) => ({editSchool:!prevState.editSchool}))};
-  alterWork() {this.setState((prevState) => ({editWork:!prevState.editWork}))};
-  alterDescription() { this.setState((prevState) => ({editDescription:!prevState.editDescription}))};
-  alterAge() { this.setState((prevState) => ({editAge:!prevState.editAge}))};
 
-  changeName() { this.alterName(); this.props.startChangeName(this.state.name)};
-  changeSchool() { this.alterSchool(); this.props.startChangeSchool(this.state.school)};
-  changeWork() { this.alterWork(); this.props.startChangeWork(this.state.work)};
+  pickImage = () => {
+    this.setState({isLoading: true});
+    ImagePicker.launchImageLibraryAsync({
+      allowEditting: true,
+      aspect: [2,1]
+    }).then((result) => {
+      if(result.cancelled) {
+        return
+      }
+      ImageEditor.cropImage(result.uri, {
+        offset: {x:0,y:0},
+        size: {width: result.width, height: result.height},
+        displaySize: {width:200, height:200},
+        resizeMode: 'container'
+      }, async (uri) => {
+        const url = await uploadImage(uri);
+        this.props.startProfilePicture(url);
+        this.setState({isLoading:false});
+        // Now that the image has been selected, we need to upload the image
+        // to firebase storage.
+
+        /*
+        console.log('uri: ',uri);
+        const storageRef = firebase.storage().ref(`profile_pictures/${uri}`);
+        let task = storageRef.put(uri);
+        task.on('state_changed',
+          (snapshot) => {
+            let percentage = snapshot.bytesTransferred / snapshot.totalBytes * 100
+            console.log(`Upload is ${percentage}% done.`)
+          },
+          (error) => console.log('error uploading file: ',error),
+          (complete) => startProfilePicture(task.snapshot.downloadURL)
+        )
+        */
+      },
+      () => console.log('Error'))
+    })
+  }
+
+  alterName() {   this.setState((prevState) => ({editName:!prevState.editName}))};
+  alterSchool() { this.setState((prevState) => ({editSchool:!prevState.editSchool}))};
+  alterWork() {   this.setState((prevState) => ({editWork:!prevState.editWork}))};
+  alterDescription() { this.setState((prevState) => ({editDescription:!prevState.editDescription}))};
+  alterAge() {    this.setState((prevState) => ({editAge:!prevState.editAge}))};
+
+  changeName() {  this.alterName(); this.props.startChangeName(this.state.name)};
+  changeSchool() {this.alterSchool(); this.props.startChangeSchool(this.state.school)};
+  changeWork() {  this.alterWork(); this.props.startChangeWork(this.state.work)};
   changeDescription() { this.alterDescription(); this.props.startChangeDescription(this.state.description)};
-  changeAge() { this.alterAge(); this.props.startChangeAge(this.state.age)};
+  changeAge() {   this.alterAge(); this.props.startChangeAge(this.state.age)};
+
+  removeAccount = () => {
+    console.log('Remove Account function');
+    this.props.startRemoveProfile();
+    this.props.startLogout();
+
+  }
 
   render() {
     return (
         <View style={styles.settingsContainer}>
             <Card>
-
+            {this.state.isLoading ? (
+              <Spinner size="small" style={styles.spinner}/>
+            ) : (
+              <TouchableOpacity onPress={this.pickImage}>
+                <Text>Choose New Picture</Text>
+                
+                  {this.state.image && (
+                  <Image style={styles.img} source={{uri:this.props.profilePic}}/>
+                  )}
+                </TouchableOpacity>
+            )}
+              
               <CardSection stylesOverride={styles.cardSection}>
               {!this.state.editName? (
                 <TouchableOpacity onPress={() => this.alterName()}>
@@ -146,6 +213,9 @@ class EditProfile extends Component {
               )}
               </CardSection>
             </Card>
+            
+              <Button onPress={this.removeAccount}>Remove Account</Button>
+            
         </View>
     )
   }
@@ -176,6 +246,16 @@ const styles = StyleSheet.create({
       flex: 1,
       flexDirection: 'row',
       justifyContent: 'space-between'
+    },
+    img: {
+      width: 150,
+      height: 150,
+      resizeMode: 'contain',
+      backgroundColor: 'black'
+    },
+    spinner: {
+      width: 150,
+      height: 150
     }
 });
 
@@ -187,6 +267,8 @@ const mapDispatchToProps = (dispatch) => {
         startChangeName: (name) => dispatch(startChangeName(name)),
         startChangeSchool: (school) => dispatch(startChangeSchool(school)),
         startChangeWork: (work) => dispatch(startChangeWork(work)),
+        startRemoveProfile: () => dispatch(startRemoveProfile()),
+        startLogout: () => dispatch(startLogout()),
         startChangeDescription: (description) => dispatch(startChangeDescription(description))
     }
 }

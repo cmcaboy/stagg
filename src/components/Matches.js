@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = (state,ownProps) => {
-    console.log('state at matches -- ',state);
+    //console.log('state at matches -- ',state);
     return {
         matches: state.matchListReducer.matches,
         id: state.authReducer.uid

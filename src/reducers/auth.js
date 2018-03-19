@@ -4,7 +4,8 @@ const defaultAuthReducer = {
     email: '',
     password: '',
     error: '',
-    isLoading: false
+    isLoading: false,
+    loggedIn: false
 }
 
 const authReducer = (state = {}, action) => {
@@ -20,6 +21,16 @@ const authReducer = (state = {}, action) => {
                 ...state,
                 isLoading: action.isLoading
             }
+        case 'START_LOADING':
+            return {
+                ...state,
+                loggedIn: action.loggedIn
+            }
+        case 'FINISH_LOADING':
+            return {
+                ...state,
+                loggedIn: action.loggedIn
+            }
         case 'CHANGE_EMAIL':
             return {
                 ...state,
@@ -33,10 +44,13 @@ const authReducer = (state = {}, action) => {
         case 'LOGIN':
             return {
                 ...defaultAuthReducer,
-                uid: action.uid
+                uid: action.uid,
+                loggedIn: true
             };
         case 'LOGOUT':
             return {...defaultAuthReducer};
+        case 'RESET_STORE':
+            return defaultAuthReducer;
         default:
             return state;
             

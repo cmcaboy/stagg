@@ -51,6 +51,11 @@ const matchListReducer = (state = matchListReducerDefaultState,action = {}) => {
                 queue: state.queue.filter(element => element.id !== action.match.id),
                 matches: [...state.matches, action.match.id]
             };
+        case 'REMOVE_MATCH':
+            return {
+                ...state,
+                matches: state.matches.filter(match => match.id !== action.id)
+            }
         case 'REQUEUE':
             // Append new potential matches
             return {
@@ -63,6 +68,8 @@ const matchListReducer = (state = matchListReducerDefaultState,action = {}) => {
                 ...state,
                 queue: [...action.newQueue]
             }
+        case 'RESET_STORE':
+            return matchListReducerDefaultState;
         default:
             return state;
     } // ends switch

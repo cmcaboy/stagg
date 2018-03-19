@@ -7,6 +7,7 @@ import Matches from '../components/Matches';
 import Messenger from '../components/Messenger';
 import EditSettings from '../components/EditSettings';
 import EditProfile from '../components/EditProfile';
+import UserProfile from '../components/UserProfile';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import {Platform} from 'react-native';
 
@@ -75,6 +76,9 @@ const MainNavigator = StackNavigator({
     },
     EditProfile: {
         screen: EditProfile
+    },
+    UserProfile: {
+        screen: UserProfile
     }
 });
 

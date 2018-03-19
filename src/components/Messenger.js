@@ -11,54 +11,68 @@ class Messenger extends Component {
         this.state = {
             messages: []
         }
-        console.log('matchId in const: ',this.props.matchId);
         this.messageRef = db.collection(`matches/${this.props.matchId}/messages`);
+        this.unsubscribe;
     }
     
-    componentWillMount() {
-        console.log('comp will mount');
-        console.log('matchId: ',this.props.matchId);
-        db.collection(`matches/${this.props.matchId}/messages`).get()
-        .then((messageData) => {
-            console.log('comp will mount then');
-            const messages = messageData.docs.map((doc) => {
-                return doc.data()
-            });
-            console.log('messages : ', messages);
-            this.setState({messages});
-        })
-        .catch((error) => console.log('error: ',error));
-        console.log('end of willMount');
+    componentDidMount() {
         this.listenForUpdates();
     }
 
+    componentWillUnmount() {
+        this.unsubscribe();
+    }
+
     listenForUpdates() {
-        const unsubscribe = this.messageRef.onSnapshot((querySnapshot) => {
-            //querySnapshot.docChanges.forEach((doc) => console.log(doc.doc))
-            console.log('docChanges: ',querySnapshot.data());
+        this.unsubscribe = this.messageRef.orderBy("order").onSnapshot((querySnapshot) => {
+            // the snapshot first returns all messages
+            // It then will listen to updates.
+            let messages = [];
+            querySnapshot.docChanges.forEach((change) => {
+                
+                const changeData = change.doc.data();
+                messages.push({
+                    _id: changeData.createdAt,
+                    text: changeData.text,
+                    createdAt: new Date(changeData.createdAt),
+                    user: {
+                        _id: changeData.uid,
+                        name: changeData.name,
+                        avatar: changeData.avatar
+                    }
+                });
+                
+            })
+            this.setState((prevState) => ({
+                messages: [...messages,...prevState.messages]
+            }));
         })
     }
 
-    onSend(message = []) {
-        console.log('message: ',message);
-        console.log('matchId: ',this.props.matchId);
-        this.messageRef.add({message})
-        .then(() => {
-            this.setState((prevState) => ({
-                messages: GiftedChat.append(prevState.messages,message)
-            }));
+    onSend(messages = []) {
+        messages.forEach(message => {
+            const now = new Date().getTime();
+            this.messageRef.add({
+                _id: now,
+                text: message.text,
+                createdAt: now,
+                uid: this.props.id,
+                order: -1 * now,
+                name: this.props.name,
+                avatar: this.props.profilePic
+            })
         })
-        .catch((error) => console.log('Could not update message: ',error))
     }
     
     render() {
-        console.log('id: ',this.props.id);
         return (
         <View style={styles.messengerContainer}>
             <GiftedChat 
                 messages={this.state.messages}
                 onSend={(message) => this.onSend(message)}
                 user={{_id:this.props.id}}
+                showUserAvatar={false}
+                onPressAvatar={(user) => this.props.navigation.navigate('UserProfile',{id:user._id})}
             />
         </View>
         )
@@ -68,15 +82,18 @@ class Messenger extends Component {
 const styles = StyleSheet.create({
     messengerContainer: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'stretch',
+        marginLeft: 0,
+        marginRight: 0
     }
 });
 
 const mapStateToProps = (state,ownProps) => {
     return {
         matchId: ownProps.navigation.state.params.matchId,
-        id: ownProps.navigation.state.params.id
+        id: ownProps.navigation.state.params.id,
+        name: state.profileReducer.name,
+        profilePic: state.profileReducer.profilePic
    }
 }
 export default connect(mapStateToProps)(Messenger);

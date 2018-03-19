@@ -2,14 +2,58 @@
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const Cors = require("cors");
+const express = require("express");
+const fileUpload = require("./src/fileUpload.js")
 
 admin.initializeApp(functions.config().firebase);
 const db = admin.firestore();
 
+// Upload file to firebase storage
+const api = express().use(Cors({ origin: true }));
+  fileUpload("/picture", api);
+
+  api.post("/picture", (req, response, next) => {
+    uploadImageToStorage(req.files.file[0])
+    .then(metadata => {
+      response.status(200).json(metadata[0]);
+      return next();
+    })
+    .catch(error => {
+      console.error(error);
+      response.status(500).json({ error });
+      next();
+  });
+});
+
+exports.api = functions.https.onRequest(api);
+
+const uploadImageToStorage = file => {
+  const storage = admin.storage();
+  return new Promise((resolve, reject) => {
+      const fileUpload = storage.bucket().file(file.originalname);
+      const blobStream = fileUpload.createWriteStream({
+          metadata: {
+              contentType: "image/jpg"
+          }
+      });
+
+      blobStream.on("error", error => reject(error));
+
+      blobStream.on("finish", () => {
+          fileUpload.getMetadata()
+          .then(metadata => resolve(metadata))
+          .catch(error => reject(error));
+      });
+
+  blobStream.end(file.buffer);
+});
+}
+
+/*
 exports.newQueue = functions.https.onRequest((req, res) => {
 
   const id = req.id;
-/*
   db.collection(`users`).get()
     .then((queueListData) => {
       const queueList = queueListData.data();
@@ -31,8 +75,8 @@ exports.newQueue = functions.https.onRequest((req, res) => {
         return queueList;
   })
   .catch((error) => console.log('error running query',error))
-*/
 });
+*/
 
 exports.onMessageAdd = functions.firestore
   .document(`matches/{matchId}/messages/{messageId}`)
@@ -41,6 +85,9 @@ exports.onMessageAdd = functions.firestore
     console.log('onCreate Message');
   });
 
+exports.hellowWorld = functions.https.onRequest((request, response) => {
+  response.send("Hello from Firebase!");
+});
 
 exports.getMatches = functions.https.onRequest((req,res) => {
   const id = req.query.uid;
@@ -48,27 +95,37 @@ exports.getMatches = functions.https.onRequest((req,res) => {
   // Takes in an id
   // Outputs that's id's matches
   // The matches come back with their unique id, their name, and their profile picture
-  
-  db.collection(`users`).get()
+  console.log('in getMatches');
+  db.collection(`users`).where("active","==",1).get()
             .then((data) => {
                 let userList = [];
                 data.docs.forEach((doc) => {
                     const userData = doc.data();
                     userList[doc.id] = {
                       name: userData.name,
-                      profilePic: userData.profilePic
+                      profilePic: userData.profilePic,
+                      description: userData.description,
+                      ancillaryPics: userData.ancillaryPics,
+                      school: userData.school,
+                      work: userData.work
                     }
                 });
-                return db.collection(`users/${id}/matches`).get()
+                console.log('userList: ',userList);
+                return db.collection(`users/${id}/matches`).where("active","==",1).get()
                   .then((matchData) => {
                     const matchList = matchData.docs.map((matchData) => {
                       const match = matchData.data();
+                      console.log('match: ',matchData.id);
                         return {
                           id:matchData.id,
                           name: userList[matchData.id].name,
                           profilePic: userList[matchData.id].profilePic,
                           matchId: match.matchId,
-                          lastMessage: match.lastMessage
+                          lastMessage: match.lastMessage,
+                          description: userList[matchData.id].description,
+                          ancillaryPics: userList[matchData.id].ancilaryPics,
+                          school: userList[matchData.id].school,
+                          work: userList[matchData.id].work
                         }
                     })
                     return res.send(matchList);
@@ -84,7 +141,7 @@ exports.getLikes = functions.https.onRequest((req,res) => {
   // Takes in an id
   // Outputs that's id's matches
   // The matches come back with their unique id, their name, and their profile picture
-  
+  console.log('Start getLikes');
   db.collection(`users`).get()
             .then((data) => {
                 let userList = [];
@@ -95,10 +152,13 @@ exports.getLikes = functions.https.onRequest((req,res) => {
                       profilePic: userData.profilePic
                     }
                 });
+                console.log('userList: ',userList);
                 return db.collection(`users/${id}/likes`).get()
                 .then((likeData) => {
                   const likeList = likeData.docs.map((likeData) => {
                     const like = likeData.data();
+                    console.log('like: ',like);
+                    console.log('user: ',userList[like.likedId]);
                     return {
                       id:like.likedId,
                       name: userList[like.likedId].name,
@@ -168,17 +228,6 @@ exports.oldNewQueue = functions.https.onRequest((req, res) => {
   //response.send("Hello from Firebase!");
 });
 
-exports.createNewQueue = functions.https.onRequest((req,res) => {
-  
-  const id = req.id;
-
-  functions.firestore
-    .document(`users/${id}/queueBool`)
-    .onDelete(() => {
-      // tbd
-    })
-});
-
 // Execute after a like. check to see if the liked user also like the user.
 exports.onLike = functions.firestore
   .document(`users/{userId}/likes/{likeId}`)
@@ -199,6 +248,27 @@ exports.onLike = functions.firestore
       .catch((error) => console.log('error',error))
   });
 
+  exports.onMatchShowHide = functions.firestore
+    .document(`matches/{matchId}`)
+    .onUpdate((event) => {
+      const newValue = event.data.data();
+      const oldValue = event.data.previous.data();
+      const matchId = event.params.matchId;
+      if(newValue.active === 0 && oldValue.active === 1) {
+        // Deactivate Matches
+        db.collection(`users/${newValue.userA}/matches/`).where("matchId","==",matchId)
+          .update({active:0})
+        db.collection(`users/${newValue.userB}/matches/`).where("matchId","==",matchId)
+          .update({active:0})
+      } else if(newValue.active === 1 && oldValue.active === 0) {
+        // Activate Matches
+        db.collection(`users/${newValue.userA}/matches/`).where("matchId","==",matchId)
+          .update({active:1})
+        db.collection(`users/${newValue.userB}/matches/`).where("matchId","==",matchId)
+          .update({active:1})
+      }
+  });
+
 const createMatch = (a,b) => {
   // create a match between userId's a and b
   
@@ -208,7 +278,8 @@ const createMatch = (a,b) => {
     id: ref.id,
     userA:a,
     userB:b,
-    matchTime: Date.now()
+    matchTime: Date.now(),
+    active: 1
   });
 
   db.collection(`users`).doc(`${a}`).get()

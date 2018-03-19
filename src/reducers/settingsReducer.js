@@ -17,6 +17,8 @@ const settingsReducer = (state = settingsReducerDefaultState,action = {}) => {
             return {...state,...action.updates};
         case 'CHANGE_NOTIFICATION':
             return {...state,...action.updates};
+        case 'RESET_STORE':
+            return settingsReducerDefaultState;
         default:
             return state;
     }

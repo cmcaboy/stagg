@@ -11,11 +11,15 @@ import {
     Animated,
     PanResponder,
     LayoutAnimation,
-    UIManager
+    UIManager,
+    ActivityIndicator
 } from 'react-native';
 import {connect} from 'react-redux';
 import {startLike,startDislike,startMatch,startRequeue} from '../actions/matchList';
+import {startSetCoords} from '../actions/profile';
 import {Card} from 'react-native-elements';
+import {Location,Permissions} from 'expo';
+import {Foundation} from '@expo/vector-icons';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -29,7 +33,6 @@ class Stagg extends Component {
     }*/
     constructor(props) {
         super(props);
-        this.state = {index:0}
 
         const position = new Animated.ValueXY();
 
@@ -50,7 +53,7 @@ class Stagg extends Component {
         })
 
         this.position = position;
-        this.state = {panResponder, position,index:0}
+        this.state = {panResponder, position,index:0, status: null}
     }
 
     componentWillReceiveProps(nextProps) {
@@ -64,6 +67,49 @@ class Stagg extends Component {
         UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
         // The next time the component changes, add a spring affect to it.
         LayoutAnimation.spring();
+    }
+
+    componentWillMount() {
+        // Permissions function keeps track of whether the user accepted the 
+        // permissions or not. It it has not asked, it will prompt the user.
+        Permissions.getAsync(Permissions.LOCATION)
+            .then(({ status}) => {
+                console.log('status: ',status);
+                this.setState(() => ({status}))
+                if(status === 'granted') {
+                    return this.trackLocation()
+                }
+            })
+            .catch((error) => {
+                console.warn('Error getting Location permission: ',error)
+                this.setState(() => ({status: 'undetermined'}))
+            })
+    }
+
+    askPermission = () => {
+        Permissions.askAsync(Permissions.LOCATION)
+        .then(({status}) => {
+            if(status === 'granted') {
+                return this.setLocation();
+            }
+
+            this.setState(() => ({status}))
+        })
+        .catch((error) => console.warn('error asking Location permission:', error))
+
+    }
+
+    trackLocation = () => {
+        Location.watchPositionAsync({
+            // Need to look at docs to determine parameter values
+            enableHighAccuracy: false,
+            timeInterval: 1000 * 60 * 15,
+            distanceInterval: 1000
+        }, ({coords}) => {
+            //console.log('coords: ',coords);
+            this.props.startSetCoords((coords));
+            //this.setState({status:'granted'})
+        })
     }
 
     forceSwipe(direction) {
@@ -124,34 +170,71 @@ class Stagg extends Component {
         )
     }
 
-    render() {
+    renderGranted = () => {
         return (
-        <Animated.View>
-            {this.props.prospectiveList.map((prospect,i) => {
-                if(i < this.state.index) { return null }
-                else if (i === this.state.index) {
-                    return (
-                        <Animated.View 
-                            key={prospect.id} 
-                            style={[this.getCardStyle(),styles.cardStyle]}
-                            {...this.state.panResponder.panHandlers}
-                        >
-                            {this.renderCard(prospect)}
-                        </Animated.View>
-                    )
-                } else {
-                    return (
-                        <Animated.View
-                            key={prospect.id}
-                            style={[styles.cardStyle]}
-                        >
-                            {this.renderCard(prospect)}
-                        </Animated.View>
-                    )
-                }
-            }).reverse()}
-        </Animated.View>
-        )
+            <Animated.View>
+                {this.props.prospectiveList.map((prospect,i) => {
+                    if(i < this.state.index) { return null }
+                    else if (i === this.state.index) {
+                        return (
+                            <Animated.View 
+                                key={prospect.id} 
+                                style={[this.getCardStyle(),styles.cardStyle]}
+                                {...this.state.panResponder.panHandlers}
+                            >
+                                {this.renderCard(prospect)}
+                            </Animated.View>
+                        )
+                    } else {
+                        return (
+                            <Animated.View
+                                key={prospect.id}
+                                style={[styles.cardStyle]}
+                            >
+                                {this.renderCard(prospect)}
+                            </Animated.View>
+                        )
+                    }
+                }).reverse()}
+            </Animated.View>
+            )
+    }
+
+    renderContent() {
+        if(this.state.status === 'granted'){
+            return this.renderGranted();
+        } else if(this.state.status === 'denied') {
+            return (
+                <View style={styles.center}>
+                    <Foundation name='alert' size={50}/>
+                    <Text>
+                        You denied your location. You can fix this by visiting your settings and enabling location services for this app.
+                    </Text>
+                </View>
+            )
+        } else if (this.state.status === 'undetermined') {
+            return (
+                <View style={styles.center}>
+                    <Foundation name='alert' size={50} />
+                    <Text>
+                        You need to enable location services for this app.
+                    </Text>
+                    <TouchableOpacity onPress={this.askPermission} style={styles.button}>
+                        <Text style={styles.buttonText}>
+                            Enable
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )
+        } else if (this.state.status === null) {
+            return (
+                <ActivityIndicator style={{marginTop:30}} />
+            )
+        }
+    }
+
+    render() {
+        return this.renderContent()
     }
 }
 
@@ -166,7 +249,28 @@ const styles = StyleSheet.create({
         // absolute position does not seem to work as a child of ScrollView
         position: 'absolute',
         elevation:4
-
+    },
+    undeterminedContainer: {
+        flex: 1,
+        justifyContent: 'space-between'
+    },
+    center: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 30,
+        marginRight:30
+    },
+    button: {
+        padding: 10,
+        backgroundColor: 'purple',
+        alignSelf: 'center',
+        borderRadius: 5,
+        margin: 20
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 20
     }
 });
 
@@ -175,7 +279,8 @@ const mapDispatchToProps = (dispatch) => {
         startLike: (id) => dispatch(startLike(id)),
         startDislike: (id) => dispatch(startDislike(id)),
         startMatch: (id) => dispatch(startMatch(id)),
-        startRequeue: (id) => dispatch(startRequeue(id))
+        startRequeue: (id) => dispatch(startRequeue(id)),
+        startSetCoords: (coords) => dispatch(startSetCoords(coords))
     }
 }
 

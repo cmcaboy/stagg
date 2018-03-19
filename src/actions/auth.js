@@ -31,6 +31,10 @@ export const startFacebookLogin = () => {
     }
 }
 
+export const resetStore = () => ({
+    type: 'RESET_STORE'
+})
+
 export const startEmailLogin = (email = "",password = "") => {
     loading(true);
     return (dispatch, getState) => {
@@ -64,12 +68,21 @@ export const loading = (isLoading) => ({
     type: 'LOADING',
     isLoading
 });
+export const startLoading = () => ({
+    type: 'START_LOADING',
+    loggedIn: undefined
+});
+export const finishLoading = () => ({
+    type: 'FINISH_LOADING',
+    loggedIn: true
+});
 
 export const login = (uid) => ({
     type: 'LOGIN',
     isLoading: false,
     error: '',
-    uid
+    uid,
+    loggedIn: true
 });
 
 export const startLogout = () => {

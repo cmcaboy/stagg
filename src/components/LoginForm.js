@@ -91,7 +91,6 @@ const styles = {
 
 const mapStateToProps = (state,ownProps) => {
     //console.log('state ---',state);
-    console.log('error': state.authReducer.error)
     return {
     email: state.authReducer.email,
     password: state.authReducer.password,
