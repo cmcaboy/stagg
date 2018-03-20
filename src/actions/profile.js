@@ -135,7 +135,7 @@ export const changeProfilePicture = (profilePic) => ({
 export const startChangeAncillaryPictures = (urlList) => {
     return (dispatch,getState) => {
         const id = getState().authReducer.uid;
-        db.collection("users").doc(id).update({urlList})
+        db.collection("users").doc(id).update({ancillaryPics:urlList})
             .then(() => dispatch(changeAncillaryPictures(urlList)))
             .catch((error) => console.log("Error writing document: ",error))
     }

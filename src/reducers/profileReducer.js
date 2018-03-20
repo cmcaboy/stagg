@@ -10,6 +10,7 @@ const profileReducerDefaultState = {
 };
 
 const profileReducer = (state = profileReducerDefaultState,action = {}) => {
+    console.log('profile reducer: ',action);
     switch(action.type) {
         case 'NEW_USER':
             return action.newUser;

@@ -6,7 +6,8 @@ import {View,
   Platform,
   TextInput,
   ImageEditor,
-  Image
+  Image,
+  ScrollView
 } from 'react-native';
 import {ImagePicker} from 'expo';
 import {CirclePicture,Card,CardSection,Button,Spinner} from './common';
@@ -24,6 +25,8 @@ import {
 import { startLogout } from '../actions/auth';
 import {firebase} from '../firebase';
 import uploadImage from '../firebase/uploadImage';
+import expandArrayToFive from '../selectors/expandArrayToFive';
+import PhotoSelector from './PhotoSelector';
 
 class EditProfile extends Component {
   constructor(props) {
@@ -39,7 +42,6 @@ class EditProfile extends Component {
       work: this.props.work,
       description: this.props.description,
       age:this.props.age,
-      image: this.props.profilePic,
       isLoading: false
     }
   }
@@ -83,6 +85,24 @@ class EditProfile extends Component {
     })
   }
 
+  switchPicPosition = (a,b) => {
+    let temp = [this.props.profilePic,...this.props.ancillaryPics];
+    console.log('temp: ',temp);
+    console.log('ancillaryPics: ',this.props.ancillaryPics);
+    console.log('a: ',a);
+    console.log('b: ',b);
+    const tempItem = temp[a];
+    temp[a] = temp[b];
+    temp[b] = tempItem;
+    if(a === 0 || b === 0) {
+      this.props.startProfilePicture(temp[0]);
+      this.props.startChangeAncillaryPictures(temp.slice(1))
+    } else {
+      this.props.startChangeAncillaryPictures(temp.slice(1));
+    }
+  }
+
+
   alterName() {   this.setState((prevState) => ({editName:!prevState.editName}))};
   alterSchool() { this.setState((prevState) => ({editSchool:!prevState.editSchool}))};
   alterWork() {   this.setState((prevState) => ({editWork:!prevState.editWork}))};
@@ -104,20 +124,15 @@ class EditProfile extends Component {
 
   render() {
     return (
-        <View style={styles.settingsContainer}>
-            <Card>
-            {this.state.isLoading ? (
-              <Spinner size="small" style={styles.spinner}/>
-            ) : (
-              <TouchableOpacity onPress={this.pickImage}>
-                <Text>Choose New Picture</Text>
-                
-                  {this.state.image && (
-                  <Image style={styles.img} source={{uri:this.props.profilePic}}/>
-                  )}
-                </TouchableOpacity>
-            )}
-              
+        <ScrollView>
+          <Card>
+            <PhotoSelector 
+              urlList={[this.props.profilePic,...this.props.ancillaryPics]}
+              switchPicPosition={(a,b) => this.switchPicPosition(a,b)}
+              pickImage={this.pickImage}
+            />
+          </Card>
+          <Card>
               <CardSection stylesOverride={styles.cardSection}>
               {!this.state.editName? (
                 <TouchableOpacity onPress={() => this.alterName()}>
@@ -213,10 +228,11 @@ class EditProfile extends Component {
               )}
               </CardSection>
             </Card>
+          <Card>
+            <Button onPress={this.removeAccount}>Remove Account</Button>
+          </Card>  
             
-              <Button onPress={this.removeAccount}>Remove Account</Button>
-            
-        </View>
+        </ScrollView>
     )
   }
 }
@@ -224,8 +240,8 @@ class EditProfile extends Component {
 const styles = StyleSheet.create({
     settingsContainer: {
         flex: 1,
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        //justifyContent: 'space-between',
+        //alignItems: 'center',
         marginBottom: 20
     },
     textInputStyle: {
@@ -283,7 +299,8 @@ const mapStateToProps = (state,ownProps) => {
         school: state.profileReducer.school,
         description: state.profileReducer.description,
         gender: state.profileReducer.gender,
-        age: state.profileReducer.age
+        age: state.profileReducer.age,
+        ancillaryPics: expandArrayToFive(state.profileReducer.ancillaryPics)
     }
 }
 
