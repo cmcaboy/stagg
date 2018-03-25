@@ -1,40 +1,76 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import {CirclePicture} from './common';
+import {CirclePicture,Card} from './common';
 import {connect} from 'react-redux';
 import {startLogout} from '../actions/auth';
+import {MaterialCommunityIcons,Ionicons,MaterialIcons} from '@expo/vector-icons';
 
 const Settings = (props) => {
     const {profilePic = 'https://placebear.com/300/200',name,work,school} = props;
     return (
         <View style={styles.settingsContainer}>
+            
             <View style={styles.miniProfile}> 
                 <CirclePicture size='large' imageURL={profilePic} />
                 <View style={styles.profileText}>
-                    <Text style={styles.nameText}>{name}</Text>
-                    <Text style={styles.schoolText}>
-                        {school? school:work}
-                    </Text>
-                </View>
+                    <Text style={[styles.nameText,{textAlign:'center'}]}>{name}</Text>
+                    {school? (
+                        <View style={styles.subHeading}>
+                            <Ionicons name="md-school" size={14} color="black" style={styles.schoolText}/>
+                            <Text style={[styles.schoolText,{paddingLeft:4}]}>{school}</Text>
+                        </View>
+                    ) : (
+                        <View style={styles.subHeading}>
+                            <MaterialIcons name="work" size={14} color="black" style={styles.schoolText}/>
+                            <Text style={[styles.schoolText,{paddingLeft:4}]}>{work}</Text>
+                        </View>
+                    )}
+                        </View>
             </View>
             <View style={styles.options}>
-                <TouchableOpacity onPress={() => props.navigation.navigate('EditSettings')}>
-                <Text style={styles.optionText}>
-                    Settings
-                </Text></TouchableOpacity>
-                <TouchableOpacity onPress={() => props.navigation.navigate('EditProfile')}>
-                <Text style={styles.optionText}>
-                    Edit Info
-                </Text></TouchableOpacity>
+                <TouchableOpacity 
+                    onPress={() => props.navigation.navigate('EditSettings')}
+                    style={styles.buttons}
+                >
+                    <Ionicons 
+                        name="md-settings"
+                        size={32}
+                        color="black"
+                    />
+                    <Text style={styles.optionText}>
+                        Settings
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                    onPress={() => props.navigation.navigate('EditProfile')}
+                    style={styles.buttons}
+                >
+                    <MaterialCommunityIcons 
+                        name="account-edit"
+                        size={32}
+                        color="black"
+                    />
+                    <Text style={styles.optionText}>
+                        Edit Info
+                    </Text>
+                </TouchableOpacity>
             </View>
             <View>
                 <TouchableOpacity
-                    onPress={() => props.startLogout()}>
+                    onPress={() => props.startLogout()}
+                    style={styles.buttons}
+                >
+                    <MaterialCommunityIcons 
+                        name="logout"
+                        size={32}
+                        color="black"
+                    />
                     <Text style={styles.optionText}>
                     Log out
                     </Text>
                 </TouchableOpacity>
             </View>
+        
         </View>
     )
 }
@@ -44,10 +80,19 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 20
+        paddingBottom: 20,
+        backgroundColor: '#FFFFFF',
+        margin:10,
+        borderColor: '#ddd',
+        borderWidth: 1,
+        borderBottomWidth: 0,
+        shadowOffset: {width: 0, height: 2},
+        shadowRadius: 2,
+        shadowOpacity: 0.5,
+        borderRadius: 10
     },
     miniProfile: {
-        flex: 1,
+        flex: 2,
         justifyContent: 'space-around',
         alignItems: 'center',
         marginTop: 20,
@@ -73,7 +118,16 @@ const styles = StyleSheet.create({
         fontSize: 30
     },
     schoolText: {
-        fontSize: 20
+        fontSize: 14,
+        opacity: 0.7
+    },
+    buttons: {
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    subHeading: {
+        flexDirection: 'row',
+        marginTop: 2
     }
 });
 

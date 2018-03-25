@@ -7,10 +7,18 @@ import {View,
   TextInput,
   ImageEditor,
   Image,
-  ScrollView
+  ScrollView,
+  KeyboardAvoidingView
 } from 'react-native';
 import {ImagePicker} from 'expo';
-import {CirclePicture,Card,CardSection,Button,Spinner} from './common';
+import {
+  CirclePicture,
+  Card,
+  CardSection,
+  Button,
+  Spinner,
+  CondInput
+} from './common';
 import {connect} from 'react-redux';
 import {
   startChangeAge,
@@ -24,7 +32,7 @@ import {
 } from '../actions/profile';
 import { startLogout } from '../actions/auth';
 import {firebase} from '../firebase';
-import uploadImage from '../firebase/uploadImage';
+
 import expandArrayToFive from '../selectors/expandArrayToFive';
 import PhotoSelector from './PhotoSelector';
 
@@ -32,88 +40,24 @@ class EditProfile extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      editName: false,
-      editSchool: false,
-      editWork: false,
-      editDescription: false,
-      editAge: false,
-      name: this.props.name,
-      school: this.props.school,
-      work: this.props.work,
-      description: this.props.description,
-      age:this.props.age,
       isLoading: false
     }
   }
 
-  pickImage = () => {
-    this.setState({isLoading: true});
-    ImagePicker.launchImageLibraryAsync({
-      allowEditting: true,
-      aspect: [2,1]
-    }).then((result) => {
-      if(result.cancelled) {
-        return
-      }
-      ImageEditor.cropImage(result.uri, {
-        offset: {x:0,y:0},
-        size: {width: result.width, height: result.height},
-        displaySize: {width:200, height:200},
-        resizeMode: 'container'
-      }, async (uri) => {
-        const url = await uploadImage(uri);
-        this.props.startProfilePicture(url);
-        this.setState({isLoading:false});
-        // Now that the image has been selected, we need to upload the image
-        // to firebase storage.
+  static navigationOptions = ({navigation}) => ({
+    title: `Edit Profile`,
+    headerRight: (<View></View>),
+    headerTitleStyle: 
+        {
+            alignSelf: 'center',
+            textAlign: 'center',
+            fontWeight:'normal',
+            fontSize: 22,
+            color: '#606060'
+        }
+  })
 
-        /*
-        console.log('uri: ',uri);
-        const storageRef = firebase.storage().ref(`profile_pictures/${uri}`);
-        let task = storageRef.put(uri);
-        task.on('state_changed',
-          (snapshot) => {
-            let percentage = snapshot.bytesTransferred / snapshot.totalBytes * 100
-            console.log(`Upload is ${percentage}% done.`)
-          },
-          (error) => console.log('error uploading file: ',error),
-          (complete) => startProfilePicture(task.snapshot.downloadURL)
-        )
-        */
-      },
-      () => console.log('Error'))
-    })
-  }
-
-  switchPicPosition = (a,b) => {
-    let temp = [this.props.profilePic,...this.props.ancillaryPics];
-    console.log('temp: ',temp);
-    console.log('ancillaryPics: ',this.props.ancillaryPics);
-    console.log('a: ',a);
-    console.log('b: ',b);
-    const tempItem = temp[a];
-    temp[a] = temp[b];
-    temp[b] = tempItem;
-    if(a === 0 || b === 0) {
-      this.props.startProfilePicture(temp[0]);
-      this.props.startChangeAncillaryPictures(temp.slice(1))
-    } else {
-      this.props.startChangeAncillaryPictures(temp.slice(1));
-    }
-  }
-
-
-  alterName() {   this.setState((prevState) => ({editName:!prevState.editName}))};
-  alterSchool() { this.setState((prevState) => ({editSchool:!prevState.editSchool}))};
-  alterWork() {   this.setState((prevState) => ({editWork:!prevState.editWork}))};
-  alterDescription() { this.setState((prevState) => ({editDescription:!prevState.editDescription}))};
-  alterAge() {    this.setState((prevState) => ({editAge:!prevState.editAge}))};
-
-  changeName() {  this.alterName(); this.props.startChangeName(this.state.name)};
-  changeSchool() {this.alterSchool(); this.props.startChangeSchool(this.state.school)};
-  changeWork() {  this.alterWork(); this.props.startChangeWork(this.state.work)};
-  changeDescription() { this.alterDescription(); this.props.startChangeDescription(this.state.description)};
-  changeAge() {   this.alterAge(); this.props.startChangeAge(this.state.age)};
+  
 
   removeAccount = () => {
     console.log('Remove Account function');
@@ -123,115 +67,50 @@ class EditProfile extends Component {
   }
 
   render() {
+    console.log()
     return (
-        <ScrollView>
-          <Card>
+      <ScrollView contentContainerStyle={styles.settingsContainer}>
+      <KeyboardAvoidingView
+        behavior={'position'}>
+          <Card style={{padding:2}}>
             <PhotoSelector 
               urlList={[this.props.profilePic,...this.props.ancillaryPics]}
-              switchPicPosition={(a,b) => this.switchPicPosition(a,b)}
-              pickImage={this.pickImage}
+              //switchPicPosition={(a,b) => this.switchPicPosition(a,b)}
+              //pickImage={this.pickImage}
+            />
+          </Card>
+          <Card style={{padding:0}}>
+            <CondInput 
+              field="Name"
+              value={this.props.name}
+              updateValue={this.props.startChangeName}
+            />
+            <CondInput 
+              field="Education"
+              value={this.props.school}
+              updateValue={this.props.startChangeSchool}
+            />
+            <CondInput 
+              field="Work"
+              value={this.props.work}
+              updateValue={this.props.startChangeWork}
+            />
+            <CondInput 
+              field="Age"
+              value={this.props.age}
+              updateValue={this.props.startChangeAge}
+            />
+            <CondInput 
+              field="Description"
+              value={this.props.description}
+              updateValue={this.props.startChangeDescription}
+              multiline={true}
             />
           </Card>
           <Card>
-              <CardSection stylesOverride={styles.cardSection}>
-              {!this.state.editName? (
-                <TouchableOpacity onPress={() => this.alterName()}>
-                <Text>Name: {this.props.name}</Text>
-              </TouchableOpacity>
-              ) : (
-                <View style={styles.editView}>
-                <TextInput
-                  style={styles.textInputStyle}
-                  onChangeText={(name) => this.setState({name})}
-                  value={this.state.name}
-                />
-                <Button 
-                  onPress={() => this.changeName()}
-                >Save</Button>
-                </View>
-              )}
-              </CardSection>
-
-              <CardSection stylesOverride={styles.cardSection}>
-              {!this.state.editSchool? (
-                <TouchableOpacity onPress={() => this.alterSchool()}>
-                <Text>School: {this.props.school}</Text>
-              </TouchableOpacity>
-              ) : (
-                <View style={styles.editView}>
-                <TextInput
-                  style={styles.textInputStyle}
-                  onChangeText={(school) => this.setState({school})}
-                  value={this.state.school}
-                />
-                <Button 
-                  onPress={() => this.changeSchool()}
-                >Save</Button>
-                </View>
-              )}
-              </CardSection>
-
-              <CardSection stylesOverride={styles.cardSection}>
-              {!this.state.editWork? (
-                <TouchableOpacity onPress={() => this.alterWork()}>
-                <Text>Work: {this.props.work}</Text>
-              </TouchableOpacity>
-              ) : (
-                <View style={styles.editView}>
-                <TextInput
-                  style={styles.textInputStyle}
-                  onChangeText={(work) => this.setState({work})}
-                  value={this.state.work}
-                />
-                <Button 
-                  onPress={() => this.changeWork()}
-                >Save</Button>
-                </View>
-              )}
-              </CardSection>
-
-              <CardSection stylesOverride={styles.cardSection}>
-              {!this.state.editDescription? (
-                <TouchableOpacity onPress={() => this.alterDescription()}>
-                <Text>Description: {this.props.description}</Text>
-              </TouchableOpacity>
-              ) : (
-                <View style={styles.editView}>
-                <TextInput
-                  style={styles.textInputStyle}
-                  onChangeText={(description) => this.setState({description})}
-                  value={this.state.description}
-                />
-                <Button 
-                  onPress={() => this.changeDescription()}
-                >Save</Button>
-                </View>
-              )}
-              </CardSection>
-
-              <CardSection stylesOverride={styles.cardSection}>
-              {!this.state.editAge? (
-                <TouchableOpacity onPress={() => this.alterAge()}>
-                <Text>Age: {this.props.age}</Text>
-              </TouchableOpacity>
-              ) : (
-                <View style={styles.editView}>
-                <TextInput
-                  style={styles.textInputStyle}
-                  onChangeText={(age) => this.setState({age})}
-                  value={this.state.age}
-                />
-                <Button 
-                  onPress={() => this.changeAge()}
-                >Save</Button>
-                </View>
-              )}
-              </CardSection>
-            </Card>
-          <Card>
             <Button onPress={this.removeAccount}>Remove Account</Button>
           </Card>  
-            
+          </KeyboardAvoidingView>
         </ScrollView>
     )
   }
@@ -239,10 +118,9 @@ class EditProfile extends Component {
 
 const styles = StyleSheet.create({
     settingsContainer: {
-        flex: 1,
         //justifyContent: 'space-between',
         //alignItems: 'center',
-        marginBottom: 20
+        padding: 10
     },
     textInputStyle: {
       height: 40,
@@ -255,8 +133,7 @@ const styles = StyleSheet.create({
       height: 400
     },
     cardSection: {
-      height:50,
-      width: 300
+      height:40,
     },
     editView: {
       flex: 1,
@@ -292,6 +169,7 @@ const mapDispatchToProps = (dispatch) => {
 
 
 const mapStateToProps = (state,ownProps) => {
+  console.log('state: ',state);
     return {
         profilePic: state.profileReducer.profilePic,
         name: state.profileReducer.name,

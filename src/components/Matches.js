@@ -10,50 +10,76 @@ import {
 import {connect} from 'react-redux';
 import {CirclePicture} from './common';
 import MatchListItem from './MatchListItem';
+import {Ionicons} from '@expo/vector-icons';
 
 class Matches extends Component {
     constructor(props) {
         super(props);
     }
-    render() {
+    noMatches = () => {
         return (
-            <View style={styles.matchContainer}>
-                <View style={styles.newMatchesContainer}>
-                    <Text>New Matches</Text>
-                    <ScrollView
-                        horizontal={true}
-                    >
-                    {this.props.matches.map((match) => {
-                        return (
-                            <TouchableOpacity 
-                                onPress={() => this.props.navigation.navigate('Messenger',{matchId:match.matchId,id:this.props.id})}
-                                key={match.id}
-                            >
-                                <View style={styles.newMatch}>
-                                    <CirclePicture imageURL={match.profilePic} picSize="small"/>
-                                    <Text>{match.name}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        )
-                    })}
-                    </ScrollView>
-                </View>
-                <View style={styles.messagesContainer}>
-                    <Text>Messages</Text>
-                    <ScrollView>
-                        {this.props.matches.map((match) => (
-                        <MatchListItem 
-                            key={match.id}
-                            name={match.name} 
-                            picture={match.profilePic}
-                            lastMessage={match.lastMessage}
-                            onPress={() => this.props.navigation.navigate('Messenger',{matchId:match.matchId,id:this.props.id})}
-                        />
-                    ))}
-                    </ScrollView>
-                </View>
+            <View style={styles.noMatches}>
+                <Ionicons 
+                    name="md-sad"
+                    size={100}
+                    color="black"
+                />
+                <Text>You do not have any matches.</Text>
+                <Text>Better get to swipping!</Text>
             </View>
         )
+    }
+    render() {
+        const {matches,navigation} = this.props;
+
+        if (matches.length === 0) {
+            return this.noMatches();
+        } else {
+            return (
+                <View style={styles.matchContainer}>
+                    <View style={styles.newMatchesContainer}>
+                        <Text>New Matches</Text>
+                        <ScrollView
+                            horizontal={true}
+                        >
+                        {matches.filter(match => !match.lastMessage).map((match) => {
+                            return (
+                                <TouchableOpacity 
+                                    onPress={() => navigation.navigate('Messenger',{matchId:match.matchId,id:this.props.id,name:match.name,pic:match.profilePic})}
+                                    key={match.id}
+                                >
+                                    <View style={styles.newMatch}>
+                                        <CirclePicture imageURL={match.profilePic} picSize="small"/>
+                                        <Text>{match.name}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            )
+                        })}
+                        </ScrollView>
+                    </View>
+                    <View style={styles.messagesContainer}>
+                        <Text>Messages</Text>
+                        <ScrollView>
+                            {matches.filter(match => !!match.lastMessage).map((match) => (
+                            <MatchListItem 
+                                key={match.id}
+                                name={match.name} 
+                                picture={match.profilePic}
+                                lastMessage={match.lastMessage}
+                                onPress={() => navigation.navigate('Messenger',{
+                                    matchId:match.matchId,
+                                    id:this.props.id,
+                                    otherId: match.id,
+                                    name:match.name,
+                                    pic:match.profilePic
+                                })}
+                            />
+                        ))}
+                        </ScrollView>
+                    </View>
+                </View>
+            )
+    }
     }
 }
 /*
@@ -70,15 +96,16 @@ const Matches = (props) => {
 const styles = StyleSheet.create({
     matchContainer: {
         flex: 1,
-        marginLeft: 10,
-        marginTop:5
+        paddingLeft: 10,
+        paddingTop:5,
+        backgroundColor: '#FFFFFF'
 
     },
     newMatchesContainer: {
         flex: 1
     },
     messagesContainer: {
-        flex: 4
+        flex: 3
     },
     newMatch: {
         margin: 5,
@@ -86,11 +113,17 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignItems: 'center',
         flexDirection:'column'
+    },
+    noMatches: {
+        flex:1,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
 
 const mapStateToProps = (state,ownProps) => {
     //console.log('state at matches -- ',state);
+    console.log('state matchList: ',state.matchListReducer);
     return {
         matches: state.matchListReducer.matches,
         id: state.authReducer.uid

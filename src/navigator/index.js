@@ -8,7 +8,7 @@ import Messenger from '../components/Messenger';
 import EditSettings from '../components/EditSettings';
 import EditProfile from '../components/EditProfile';
 import UserProfile from '../components/UserProfile';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, Entypo, MaterialCommunityIcons } from '@expo/vector-icons';
 import {Platform} from 'react-native';
 
 const Tabs = TabNavigator({
@@ -16,7 +16,7 @@ const Tabs = TabNavigator({
         screen: Settings,
         navigationOptions: {
             tabBarLabel: 'Settings',
-            tabBarIcon: ({ tintColor }) => <Ionicons name='ios-bookmarks' size={30} color={tintColor} />
+            tabBarIcon: ({ tintColor }) => <MaterialCommunityIcons name='account' size={30} color={tintColor} />
           }
     },
     // Taking the leaderboard out for now. I would prefer to have 3 tabs rather than 4
@@ -34,14 +34,15 @@ const Tabs = TabNavigator({
         screen: Stagg,
         navigationOptions: {
             tabBarLabel: 'Stagg',
-            tabBarIcon: ({ tintColor }) => <Ionicons name='ios-bookmarks' size={30} color={tintColor} />
+            tabBarIcon: ({ tintColor }) => <Entypo name='heart' size={30} color={tintColor} />
           }
     },
     Matches: {
         screen: Matches,
         navigationOptions: {
             tabBarLabel: 'Matches',
-            tabBarIcon: ({ tintColor }) => <Ionicons name='ios-bookmarks' size={30} color={tintColor} />
+            
+            tabBarIcon: ({ tintColor }) => <Entypo name='chat' size={30} color={tintColor} />
           }
     }
 }, {
@@ -50,6 +51,7 @@ const Tabs = TabNavigator({
         },
         tabBarOptions: {
           activeTintColor: Platform.OS === 'ios' ? 'purple' : 'white',
+          showLabel: false,
           style: {
             height: 56,
             backgroundColor: Platform.OS === 'ios' ? 'white' : 'purple',

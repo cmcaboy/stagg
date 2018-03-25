@@ -67,6 +67,28 @@ const matchListReducer = (state = matchListReducerDefaultState,action = {}) => {
             return {
                 ...state,
                 queue: [...action.newQueue]
+            };
+        case 'UPDATE_LAST_NAME':
+            return {
+                ...state,
+                matches: state.matches.map(match => {
+                        if(match.matchId === action.matchId) {
+                            return {...match,lastName:action.lastName}
+                        } else {
+                            return match;
+                        }
+                    })
+                };
+        case 'UPDATE_LAST_MESSAGE':
+            return {
+                ...state,
+                matches: state.matches.map(match => {
+                    if(match.matchId === action.matchId) {
+                        return {...match,lastMessage:action.lastMessage}
+                    } else {
+                        return match;
+                    }
+                })
             }
         case 'RESET_STORE':
             return matchListReducerDefaultState;

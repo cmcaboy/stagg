@@ -11,7 +11,7 @@ const MatchListItem = ({name,picture,onPress,lastMessage = "test"}) => {
             <Text>
               {name}
             </Text>
-            <Text>{lastMessage}</Text>
+            <Text style={styles.lastMessage}>{lastMessage}</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -33,6 +33,10 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'flex-start',
       marginLeft: 5
+    },
+    lastMessage: {
+      opacity: 0.7,
+      fontSize: 10
     }
 });
 

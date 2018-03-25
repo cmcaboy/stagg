@@ -7,6 +7,7 @@ import MainNavigator from '../navigator';
 import { firebase } from '../firebase';
 import { login, logout, resetStore } from '../actions/auth';
 import { connect } from 'react-redux';
+import { standard_font } from '../styles';
 
 function UdaciStatusBar ({backgroundColor, ...props}) {
   return (
@@ -53,7 +54,7 @@ class Authentication extends React.Component {
   }
   render() {
     return (
-      <View style={{flex:1}}>
+      <View style={styles.container}>
         <UdaciStatusBar backgroundColor="purple" barStyle="light-content" />
         {this.renderContent()}
       </View>
@@ -64,9 +65,7 @@ class Authentication extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#fff'
   },
   spinnerStyle: {
     flex: 1,

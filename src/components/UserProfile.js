@@ -14,7 +14,7 @@ class UserProfile extends Component {
   }
 
   render() {
-    //console.log(this.props.user); 
+    console.log('user: ',this.props.user); 
     return (
       <View style={styles.userProfileContainer}>
         <Image 
@@ -23,11 +23,11 @@ class UserProfile extends Component {
         />
         <View style={styles.userInfo}>
           <Text>{this.props.user.name}</Text>
-          {this.props.user.school && <Text>{this.props.user.school}</Text>}
-          {this.props.user.work && <Text>{this.props.user.work}</Text>}  
-        </View>
+          {!!this.props.user.school && <Text>{this.props.user.school}</Text>}
+          {!!this.props.user.work && <Text>{this.props.user.work}</Text>}  
+          </View>
         <View style={styles.userDescription}>
-          {this.props.user.description && <Text>{this.props.user.description}</Text>}
+          {!!this.props.user.description && <Text>{this.props.user.description}</Text>}
         </View>
         
       </View>

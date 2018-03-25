@@ -26,7 +26,8 @@ export const loadLists = (initialListData) => {
     const {
         matches = [],
         likes = [],
-        dislikes = []
+        dislikes = [],
+        queue = []
     } = initialListData;
     const initialLists = { matches, likes, dislikes, queue};
 
@@ -37,6 +38,41 @@ export const loadLists = (initialListData) => {
         }
     }
 };
+
+export const startUpdateLastMessage = (matchId,message) => {
+// i could just pass in the matchId and the Google Cloud function can do the rest
+    return (dispatch) => {
+        // I am not putting the dispatch function within the fetch callback because I
+        // don't want to delay the state update. This piece of info is not critial
+        // to keep synced up so I can optimize performance in this setting.
+        fetch(`https://us-central1-stagg-test.cloudfunctions.net/putLastMessage?matchId=${matchId}&message=${message}`)
+            .then((response) => response.json())
+            .then((response) => console.log('response from updateLastMessage: ',response))
+            .catch((error) => console.log("Error from updateLastMessage: ",error))
+        dispatch(updateLastMessage(matchId,message))
+    }
+}
+
+export const startUpdateLastName = (matchId,name) => {
+    return (dispatch) => {
+        fetch(`https://us-central1-stagg-test.cloudfunctions.net/putLastName?matchId=${matchId}&name=${name}`)
+            .then((response) => response.json())
+            .then((response) => console.log('response from updateLastName: ',response))
+            .catch((error) => console.log("Error from updateLastName: ",error))
+        dispatch(updateLastName(matchId,name))
+    }
+}
+export const updateLastMessage = (matchId,lastMessage) => ({
+    type: 'UPDATE_LAST_MESSAGE',
+    matchId,
+    lastMessage
+});
+
+export const updateLastName = (matchId,lastName) => ({
+    type: 'UPDATE_LAST_NAME',
+    matchId,
+    lastName
+});
 
 export const likeList = (likeList) => ({
     type: 'LIKE_LIST',

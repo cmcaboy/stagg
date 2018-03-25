@@ -122,6 +122,7 @@ exports.getMatches = functions.https.onRequest((req,res) => {
                           profilePic: userList[matchData.id].profilePic,
                           matchId: match.matchId,
                           lastMessage: match.lastMessage,
+                          lastUser: match.lastUser,
                           description: userList[matchData.id].description,
                           ancillaryPics: userList[matchData.id].ancilaryPics,
                           school: userList[matchData.id].school,
@@ -248,6 +249,82 @@ exports.onLike = functions.firestore
       .catch((error) => console.log('error',error))
   });
 
+  /*
+  exports.lastMessageUpdate = functions.firestore
+    .document(`matches/{matchId}/messages/{messageId}`)
+    .onCreate((event) => {
+      const data = event.data.data();
+      const matchId = event.params.matchId;
+      const lastMessage = data.text;
+      const lastUser = data.name;
+      console.log('matchId: ',matchId);
+      console.log('lastMessage: ',lastMessage);
+      console.log('lastUser: ',lastUser);
+
+      updateLastMessage(matchId,lastMessage);
+      updateLastUser(matchId,lastUser);
+    })
+  */
+
+// Take the last message from the match conversation and place
+// it in the user's profile under matches.
+
+exports.putLastMessage = functions.https.onRequest((req, res) => {
+  console.log('matchId: ',req.query.matchId);
+  console.log('message: ',req.query.message);
+  updateLastMessage(req.query.matchId,req.query.message);
+});
+
+exports.putLastName = functions.https.onRequest((req, res) => {
+  console.log('matchId: ',req.query.matchId);
+  console.log('name: ',req.query.name);
+  updateLastUser(req.query.matchId,req.query.lastName)
+});
+
+const updateLastMessage = (matchId,lastMessage) => {
+  return db.collection(`matches`).doc(`${matchId}`).get()
+  .then((snapshot) => {
+    const matchData = snapshot.data();
+    console.log('matchData: ',matchData);
+    const userA = matchData.userA;
+    console.log('userA: ',userA);
+    const userB = matchData.userB;
+    console.log('userB: ',userB);
+
+    const lastMessageCall = db.collection(`users/${userA}/matches`).doc(`${userB}`)
+      .update({lastMessage})
+    const lastMessageCall2 = db.collection(`users/${userB}/matches`).doc(`${userA}`)
+      .update({lastMessage})
+    return Promise.all([lastMessageCall,lastMessageCall2])
+      .then(() => res.send("Update Successful"))
+      .catch((e) => res.send("Update Failed: ",e))
+  })
+  .catch((error) => console.log('Error updating user: ',error))
+}
+
+const updateLastUser = (matchId,lastUser) => {
+  return db.collection(`matches`).doc(`${matchId}`).get()
+  .then((snapshot) => {
+    const matchData = snapshot.data();
+    console.log('matchData: ',matchData);
+    const userA = matchData.userA;
+    console.log('userA: ',userA);
+    const userB = matchData.userB;
+    console.log('userB: ',userB);
+
+    const lastUserCall = db.collection(`users/${userA}/matches`).doc(`${userB}`)
+      .update({lastUser});
+    const lastUserCall2 = db.collection(`users/${userB}/matches`).doc(`${userA}`)
+      .update({lastUser});
+    return Promise.all([lastUserCall,lastUserCall2])
+      .then(() => res.send("Update Successful"))
+      .catch((e) => res.send("Update Failed: ",e))
+  })
+  .catch((error) => console.log('Error updating user: ',error))
+}
+
+  // If active indicator on a match gets altered, adjust the match
+  // Indicators on the user's profile.
   exports.onMatchShowHide = functions.firestore
     .document(`matches/{matchId}`)
     .onUpdate((event) => {
@@ -269,6 +346,7 @@ exports.onLike = functions.firestore
       }
   });
 
+// Helper function to create a new match
 const createMatch = (a,b) => {
   // create a match between userId's a and b
   
@@ -286,7 +364,8 @@ const createMatch = (a,b) => {
     .then((snapshot) => {
       const data = snapshot.data();
       return db.collection(`users/${b}/matches`).doc(`${a}`).set({
-        matchId:ref.id
+        matchId:ref.id,
+        active: 1
       })
     })
     .catch((error) => console.log('error: ',error))
@@ -296,7 +375,8 @@ const createMatch = (a,b) => {
     .then((snapshot) => {
       const data = snapshot.data();
       return db.collection(`users/${a}/matches`).doc(`${b}`).set({
-        matchId:ref.id
+        matchId:ref.id,
+        active: 1
       })
     })
     .catch((error) => console.log('error: ',error))

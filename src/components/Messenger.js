@@ -1,8 +1,10 @@
 import React, {Component} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
 import {GiftedChat} from 'react-native-gifted-chat';
 import {db} from '../firebase';
 import {connect} from 'react-redux';
+import {startUpdateLastMessage,startUpdateLastName} from '../actions/matchList';
+import {CirclePicture} from './common';
 
 class Messenger extends Component {
     
@@ -14,6 +16,27 @@ class Messenger extends Component {
         this.messageRef = db.collection(`matches/${this.props.matchId}/messages`);
         this.unsubscribe;
     }
+
+    static navigationOptions = ({navigation}) => ({
+        title: `${navigation.state.params.name}`,
+        headerTitle: (
+            <View style={styles.headerViewStyle}>
+                <TouchableOpacity onPress={() => navigation.navigate('UserProfile',{id:navigation.state.params.otherId})}>
+                    <CirclePicture imageURL={navigation.state.params.pic} picSize="mini" />
+                </TouchableOpacity>
+                <Text style={styles.textHeader}>{navigation.state.params.name}</Text>
+                <View style={{width: 100}}></View>
+            </View>
+        ),
+        headerTitleStyle: 
+            {
+                alignSelf: 'center',
+                textAlign: 'center',
+                fontWeight:'normal',
+                fontSize: 22,
+                color: 'black'
+            }
+    })
     
     componentDidMount() {
         this.listenForUpdates();
@@ -24,6 +47,7 @@ class Messenger extends Component {
     }
 
     listenForUpdates() {
+        // Could listen for lastMessage and lastUser as well
         this.unsubscribe = this.messageRef.orderBy("order").onSnapshot((querySnapshot) => {
             // the snapshot first returns all messages
             // It then will listen to updates.
@@ -51,6 +75,7 @@ class Messenger extends Component {
 
     onSend(messages = []) {
         messages.forEach(message => {
+            console.log(message);
             const now = new Date().getTime();
             this.messageRef.add({
                 _id: now,
@@ -61,6 +86,9 @@ class Messenger extends Component {
                 name: this.props.name,
                 avatar: this.props.profilePic
             })
+            // Update lastUser and lastMessage here
+            this.props.startUpdateLastMessage(this.props.matchId,message.text);
+            this.props.startUpdateLastName(this.props.matchId,this.props.name);
         })
     }
     
@@ -85,15 +113,35 @@ const styles = StyleSheet.create({
         alignItems: 'stretch',
         marginLeft: 0,
         marginRight: 0
+    },
+    textHeader: {
+        alignSelf: 'center',
+        textAlign: 'center',
+        fontWeight:'bold',
+        fontSize: 18,
+        color: '#000',
+        paddingLeft: 8
+    },
+    headerViewStyle: {
+        flexDirection: 'row',
+        paddingVertical: 5
     }
 });
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        startUpdateLastMessage: (matchId,message) => dispatch(startUpdateLastMessage(matchId,message)),
+        startUpdateLastName: (matchId,name) => dispatch(startUpdateLastName(matchId,name)),
+    }
+}
 
 const mapStateToProps = (state,ownProps) => {
     return {
         matchId: ownProps.navigation.state.params.matchId,
         id: ownProps.navigation.state.params.id,
+        //otherId: ownProps.navigation.state.params.otherId,
         name: state.profileReducer.name,
         profilePic: state.profileReducer.profilePic
    }
 }
-export default connect(mapStateToProps)(Messenger);
+export default connect(mapStateToProps,mapDispatchToProps)(Messenger);

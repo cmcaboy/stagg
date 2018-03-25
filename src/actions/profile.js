@@ -134,6 +134,7 @@ export const changeProfilePicture = (profilePic) => ({
 
 export const startChangeAncillaryPictures = (urlList) => {
     return (dispatch,getState) => {
+        console.log('urlList: ',urlList);
         const id = getState().authReducer.uid;
         db.collection("users").doc(id).update({ancillaryPics:urlList})
             .then(() => dispatch(changeAncillaryPictures(urlList)))

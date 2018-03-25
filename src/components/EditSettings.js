@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import {Text,View,Slider,Switch,StyleSheet} from 'react-native';
+import {Text,View,Slider,Switch,StyleSheet,Dimensions} from 'react-native';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import {connect} from 'react-redux';
 import {
@@ -7,7 +7,9 @@ import {
   startChangeAgePreference,
   startChangeDistance
 } from '../actions/settings';
+import {Card} from './common';
 
+const SLIDER_WIDTH = Dimensions.get('window').width * 0.87;
 
 class EditSettings extends Component {
   constructor(props) {
@@ -17,7 +19,21 @@ class EditSettings extends Component {
       distance: this.props.distance,
       sendNotifications: this.props.sendNotifications
     }
+    
   }
+
+  static navigationOptions = ({navigation}) => ({
+    title: `Settings`,
+    headerRight: (<View></View>),
+    headerTitleStyle: 
+        {
+            alignSelf: 'center',
+            textAlign: 'center',
+            fontWeight:'normal',
+            fontSize: 22,
+            color: '#606060'
+        }
+})
     
   notificationChange = () => {
     this.setState((prevState) => ({sendNotifications:!prevState.sendNotifications}))
@@ -25,41 +41,61 @@ class EditSettings extends Component {
   }
 
   render() {
+    const {ageValues,distance,sendNotifications} = this.state;
   return (
     <View style={styles.containerStyle}>
+    <Card>
     
-    <Text>Settings</Text>
-    <Text>Age Preference</Text>
-    <MultiSlider 
-      style={{flex: 1,marginTop:20,marginBottom:20}}
-      step={1}
-      values={[this.state.ageValues[0],this.state.ageValues[1]]}
-      max={65}
-      min={18}
-      onValuesChange={(ageValues) => this.setState({ageValues:ageValues})}
-      onValuesChangeFinish={(ageValues) => this.props.startChangeAgePreference(ageValues)}
-    />
-    <Text>Min Age: {this.state.ageValues[0]}</Text>
-    <Text>Max Age: {this.state.ageValues[1]}</Text>
-    <Text>Search Distance</Text>
+    <View style={styles.sliderContainer}>
+      <View style={styles.titleSlider}>
+        <Text>Age Preference </Text>
+        <Text>{ageValues[0]} - {ageValues[1]}</Text>
+      </View>
+      <View style={{paddingTop:20,width:SLIDER_WIDTH}}>
+        <MultiSlider 
+          containerStyle={{height: 12}}
+          markerOffsetX={10}
+          sliderLength={SLIDER_WIDTH}
+          markerStyle={styles.markerStyle}
+          step={1}
+          values={[ageValues[0],ageValues[1]]}
+          max={45}
+          min={18}
+          onValuesChange={(ageValues) => this.setState({ageValues:ageValues})}
+          onValuesChangeFinish={(ageValues) => this.props.startChangeAgePreference(ageValues)}
+        />
+      </View>
+    </View>
+    </Card>
+    <Card>
+    <View style={styles.sliderContainer}>
+      <View style={styles.titleSlider}>
+        <Text>Search Distance</Text>
+        <Text>{distance}</Text>
+      </View>
+      <View style={{width:SLIDER_WIDTH}}>
     <Slider 
-      style={{}}
       step={1}
-      value={this.state.distance}
+      value={distance}
       maximumValue={50}
       minimumValue={0}
       disabled={false}
       onValueChange={(distance) => this.setState({distance:distance})}
       onSlidingComplete={(distance) => this.props.startChangeDistance(distance)}
     />
-    <Text>Distance: {this.state.distance}</Text>
-    <Text>Send Notifications</Text>
-       <Switch 
+    </View>
+    </View>
+    </Card>
+    <Card>
+    <View style={styles.titleSlider}>
+    <Text>Send Notifications</Text> 
+      <Switch 
         onValueChange={() => this.setState((prevState) => ({sendNotifications:!prevState.sendNotifications}) )}
         value={this.state.sendNotifications}
-       />
-       <Text>Send Notifications: {this.state.sendNotifications?'yes':'no'}</Text>
+      />
     </View>
+    </Card>
+  </View>
   )
 }
 }
@@ -68,7 +104,23 @@ const styles = StyleSheet.create({
   containerStyle: {
     flex: 1,
     display:'flex',
-    justifyContent: 'space-around'
+    justifyContent: 'flex-start',
+    padding: 10,
+  },
+  titleSlider: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexDirection: 'row'
+  },
+  sliderContainer: {
+    minHeight: 50,
+    justifyContent: 'flex-start',
+  },
+  markerStyle: {
+    height: 30,
+    width: 30,
+    borderRadius: 30
   }
 })
 

@@ -19,7 +19,7 @@ import {startLike,startDislike,startMatch,startRequeue} from '../actions/matchLi
 import {startSetCoords} from '../actions/profile';
 import {Card} from 'react-native-elements';
 import {Location,Permissions} from 'expo';
-import {Foundation} from '@expo/vector-icons';
+import {Foundation,Ionicons} from '@expo/vector-icons';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -170,9 +170,26 @@ class Stagg extends Component {
         )
     }
 
-    renderGranted = () => {
+    noProspects() {
         return (
-            <Animated.View>
+            <View style={styles.noProspects}>
+                <Ionicons 
+                    name="md-sad"
+                    size={100}
+                    color="black"
+                />
+                <Text>There is no one new in your area.</Text>
+                <Text>Try again later.</Text>
+            </View>
+        )
+    }
+
+    renderGranted = () => {
+        if (this.props.prospectiveList.length === 0) {
+            return this.noProspects();
+        }
+        return (
+            <Animated.View style={styles.staggContainer}>
                 {this.props.prospectiveList.map((prospect,i) => {
                     if(i < this.state.index) { return null }
                     else if (i === this.state.index) {
@@ -242,7 +259,8 @@ const styles = StyleSheet.create({
     staggContainer: {
         flex: 1,
         justifyContent: 'flex-start',
-        alignItems: 'center'
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF'
     },
     cardStyle: {
         width: SCREEN_WIDTH,
@@ -271,6 +289,11 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontSize: 20
+    },
+    noProspects: {
+        flex:1,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
 

@@ -2,16 +2,29 @@ import React from 'react';
 import { View,Image,StyleSheet } from 'react-native';
 
 
-// picSize can be 'large' or 'small'
+// picSize can be 'large', 'small', or 'mini'
 const CirclePicture = ({imageURL = 'https://placebear.com/300/200',picSize = 'large'}) => {
+    // pic
+    let HEIGHT = 0;
+    let BORDER_RADIUS = 0;
+    if (picSize == 'large') {
+        HEIGHT = 200;
+        BORDER_RADIUS = 100;
+    } else if (picSize == 'small') {
+        HEIGHT = 70;
+        BORDER_RADIUS = 35;
+    } else {
+        HEIGHT = 34;
+        BORDER_RADIUS = 17;
+    } 
     return (
         <Image 
           source={{uri:imageURL}} 
           style={[styles.pictureStyle,
             {
-              height:       picSize == 'large'? 200:50,
-              width:        picSize == 'large'? 200:50,
-              borderRadius: picSize == 'large'? 100:25
+              height:       HEIGHT,
+              width:        HEIGHT,
+              borderRadius: BORDER_RADIUS
             }
           ]}
         />
