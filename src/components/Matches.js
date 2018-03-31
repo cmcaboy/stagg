@@ -45,7 +45,13 @@ class Matches extends Component {
                         {matches.filter(match => !match.lastMessage).map((match) => {
                             return (
                                 <TouchableOpacity 
-                                    onPress={() => navigation.navigate('Messenger',{matchId:match.matchId,id:this.props.id,name:match.name,pic:match.profilePic})}
+                                    onPress={() => navigation.navigate('Messenger',{
+                                        matchId:match.matchId,
+                                        id:this.props.id,
+                                        otherId: match.id,
+                                        name:match.name,
+                                        pic:match.profilePic
+                                    })}
                                     key={match.id}
                                 >
                                     <View style={styles.newMatch}>
@@ -123,7 +129,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state,ownProps) => {
     //console.log('state at matches -- ',state);
-    console.log('state matchList: ',state.matchListReducer);
+    //console.log('state matchList: ',state.matchListReducer);
     return {
         matches: state.matchListReducer.matches,
         id: state.authReducer.uid

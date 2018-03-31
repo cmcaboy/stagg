@@ -5,6 +5,8 @@ import {connect} from 'react-redux';
 import {startLogout} from '../actions/auth';
 import {MaterialCommunityIcons,Ionicons,MaterialIcons} from '@expo/vector-icons';
 
+const BUTTON_OPACITY = 0.75;
+
 const Settings = (props) => {
     const {profilePic = 'https://placebear.com/300/200',name,work,school} = props;
     return (
@@ -36,6 +38,7 @@ const Settings = (props) => {
                         name="md-settings"
                         size={32}
                         color="black"
+                        style={{opacity:BUTTON_OPACITY}}
                     />
                     <Text style={styles.optionText}>
                         Settings
@@ -49,6 +52,7 @@ const Settings = (props) => {
                         name="account-edit"
                         size={32}
                         color="black"
+                        style={{opacity:BUTTON_OPACITY}}
                     />
                     <Text style={styles.optionText}>
                         Edit Info
@@ -64,6 +68,7 @@ const Settings = (props) => {
                         name="logout"
                         size={32}
                         color="black"
+                        style={{opacity:BUTTON_OPACITY}}
                     />
                     <Text style={styles.optionText}>
                     Log out

@@ -12,12 +12,14 @@ import {
     PanResponder,
     LayoutAnimation,
     UIManager,
-    ActivityIndicator
+    ActivityIndicator,
+    ImageBackground
 } from 'react-native';
 import {connect} from 'react-redux';
 import {startLike,startDislike,startMatch,startRequeue} from '../actions/matchList';
 import {startSetCoords} from '../actions/profile';
-import {Card} from 'react-native-elements';
+//import {Card} from 'react-native-elements';
+import {Card} from './common';
 import {Location,Permissions} from 'expo';
 import {Foundation,Ionicons} from '@expo/vector-icons';
 
@@ -159,7 +161,9 @@ class Stagg extends Component {
     }
 
     renderCard(prospect) {
+        // Instead of rendering a card, I could render an ImageBackground
         return (
+            /*
             <Card
                 key={prospect.id}
                 image={{uri:prospect.profilePic}}
@@ -167,6 +171,16 @@ class Stagg extends Component {
             >
                 <Text key={prospect.id}>{prospect.name}</Text>
             </Card>
+            */
+           <View style={{margin:5}}>
+            <ImageBackground 
+                source={{uri:prospect.profilePic}}
+                style={styles.prospectImage}
+                imageStyle={{borderRadius:10}}
+            >
+                    <Text style={styles.prospectText}>{prospect.name}</Text>   
+            </ImageBackground>
+           </View>
         )
     }
 
@@ -224,7 +238,7 @@ class Stagg extends Component {
             return (
                 <View style={styles.center}>
                     <Foundation name='alert' size={50}/>
-                    <Text>
+                    <Text style={{textAlign:'center'}}>
                         You denied your location. You can fix this by visiting your settings and enabling location services for this app.
                     </Text>
                 </View>
@@ -294,6 +308,34 @@ const styles = StyleSheet.create({
         flex:1,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    prospectText: {
+        color: '#fff',
+        fontSize: 32,
+        marginLeft: 20,
+        marginBottom: 20,
+        fontWeight: 'bold'
+    },
+    prospectView: {
+        justifyContent: 'center',
+        alignItems:'center'
+    },
+    prospectImage: {
+        height:(SCREEN_HEIGHT*.83),
+        justifyContent: 'flex-end',
+        alignItems:'flex-start',
+        backgroundColor: 'transparent',
+        borderRadius: 7,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderBottomWidth: 0,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2},
+        shadowOpacity: 0.5,
+        // just like border radius, but with shadows
+        shadowRadius: 2,
+        // elevation makes items appear to jump out
+        elevation: 1,
     }
 });
 

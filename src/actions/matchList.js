@@ -137,7 +137,7 @@ export const match = (id) => ({
 export const startNewQueue = (id) => {
     // query executed via firebase cloud functions
     //console.log('in startnewQueue: ',id)
-    return async (dispatch) => {
+    return async (dispatch,getState) => {
         /*
         const url = `https://us-central1-stagg-test.cloudfunctions.net/newQueue?id=${id}`
         fetch(url)
@@ -147,31 +147,45 @@ export const startNewQueue = (id) => {
         }
         */
 
-       const queryList = await db.collection(`users`).where("active","==",1).get()
-
-       let list = queryList.docs.map((doc) => {
-         const docData = doc.data();
-         return {
-           id:doc.id,
-           name: docData.name,
-           profilePic: docData.profilePic
-         }
-       });
-       let likeList = await db.collection(`users/${id}/likes`).get();
-       const likes = likeList.docs.map((doc) => {
-           const docData = doc.data();
-           return docData.likedId;
-        });
-        let dislikeList = await db.collection(`users/${id}/dislikes`).get();
-        const dislikes = dislikeList.docs.map((doc) => {
-            const docData = doc.data();
-            return docData.dislikedId;
-        });
+        // Workaround to avoid nasty race condition
+        // ------------------------------------------------------------------------
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+          }
+        while(getState().profileReducer.name === "Anonymous"){
+             await sleep(10);
+        }
+        // ------------------------------------------------------------------------
         
-        const excludeList = new Set([...likes,...dislikes,id]);
-        list = new Set([...list]);
+        const OppositeGender = (getState().profileReducer.gender==="male")?"female":"male";
+        const queryList = await db.collection(`users`)
+                .where("active","==",1)
+                .where("gender","==",OppositeGender)
+                .get()
 
-        dispatch(newqueue([...list].filter(x => !excludeList.has(x.id))));
+        let list = queryList.docs.map((doc) => {
+            const docData = doc.data();
+            return {
+            id:doc.id,
+            name: docData.name,
+            profilePic: docData.profilePic
+            }
+        });
+        let likeList = await db.collection(`users/${id}/likes`).get();
+        const likes = likeList.docs.map((doc) => {
+            const docData = doc.data();
+            return docData.likedId;
+            });
+            let dislikeList = await db.collection(`users/${id}/dislikes`).get();
+            const dislikes = dislikeList.docs.map((doc) => {
+                const docData = doc.data();
+                return docData.dislikedId;
+            });
+            
+            const excludeList = new Set([...likes,...dislikes,id]);
+            list = new Set([...list]);
+
+            dispatch(newqueue([...list].filter(x => !excludeList.has(x.id))));
     }
 };
 

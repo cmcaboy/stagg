@@ -6,17 +6,19 @@ const profileReducerDefaultState = {
     work: '',           // Work of user
     school: '',         // school of user
     description: '',    // a short description of the user
-    gender: 'male'      // Can be male or female
+    gender: 'female'      // Can be male or female
 };
 
 const profileReducer = (state = profileReducerDefaultState,action = {}) => {
-    console.log('profile reducer: ',action);
+    //console.log('profile reducer: ',action);
     switch(action.type) {
         case 'NEW_USER':
             return action.newUser;
         case 'CHANGE_NAME':
             return {...state,...action.updates};
         case 'CHANGE_AGE':
+            return {...state,...action.updates};
+        case 'CHANGE_GENDER':
             return {...state,...action.updates};
         case 'CHANGE_PROFILE_PIC':
             return {...state,...action.updates};

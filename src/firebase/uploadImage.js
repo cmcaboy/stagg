@@ -8,7 +8,7 @@ export default async (uri, name = uuid()) => {
     name,
     type: "image/jpg"
   });
-  console.log('body: ',body);
+  //console.log('body: ',body);
   // Need to change url to my URL
   const res = await fetch("https://us-central1-stagg-test.cloudfunctions.net/api/picture", {
     method: "POST",
@@ -19,7 +19,7 @@ export default async (uri, name = uuid()) => {
     }
   });
   //console.log('res: ',res);
-  console.log('name: ',name);
+  //console.log('name: ',name);
   const url = await firebase.storage().ref(name).getDownloadURL();
   return url;
 }

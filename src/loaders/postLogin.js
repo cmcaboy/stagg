@@ -57,7 +57,7 @@ export const postLogin = (uid,token,dispatch) => {
         Permissions.askAsync(Permissions.LOCATION)
         .then(({status}) => {
             if(status === 'granted') {
-                console.log('Geolocation permissions granted');
+              console.log('Geolocation permissions granted');
             } else {
               console.log('Geolocation permissions result: ',status);
             }

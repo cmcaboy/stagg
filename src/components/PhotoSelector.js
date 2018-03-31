@@ -45,13 +45,13 @@ class PhotoSelector extends React.Component {
         resizeMode: 'container'
       }, async (uri) => {
         const url = await uploadImage(uri);
-        console.log('i: ',i);
+        //console.log('i: ',i);
         if(i===0) {
           this.props.startProfilePicture(url);
         } else {
           const urlList = this.props.urlList.splice(1).map((item,index) => {
-            console.log('item: ',item);
-            console.log('index: ',index);
+            //console.log('item: ',item);
+            //console.log('index: ',index);
             return index === i-1 ? url : item
           });
           this.props.startChangeAncillaryPictures(urlList);
@@ -95,13 +95,13 @@ class PhotoSelector extends React.Component {
   }
 
   resetSelected() {
-    console.log('reset selected');
+    //console.log('reset selected');
     this.setState({isSelected: this.props.urlList.map(item => false)})
   }
 
   async selectImage(index) {
     await this.setState((prevState) => ({isSelected: prevState.isSelected.map((k,i) => i === index?!k:k)}))
-    console.log('select: ',this.state.isSelected);
+    //console.log('select: ',this.state.isSelected);
     if(this.state.isSelected.filter(item => item === true).length === 2) {
       let a = [];
       this.state.isSelected.forEach((item,index) => {
@@ -115,13 +115,13 @@ class PhotoSelector extends React.Component {
   }
 
   render() {
-    console.log('urlList: ',this.props.urlList);
-    console.log('isSelected: ',this.state.isSelected);
-    console.log('isLoading: ',this.state.isLoading);
+    //console.log('urlList: ',this.props.urlList);
+    //console.log('isSelected: ',this.state.isSelected);
+    //console.log('isLoading: ',this.state.isLoading);
     return (
         <View style={styles.container}>
           {this.props.urlList.map((item,index) => {
-            console.log('item: ',item);
+            //console.log('item: ',item);
             return this.state.isLoading[index] ? (
               <Spinner key={index} size="small" style={styles.photo}/>
             ) : (

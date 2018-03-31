@@ -124,11 +124,12 @@ exports.getMatches = functions.https.onRequest((req,res) => {
                           lastMessage: match.lastMessage,
                           lastUser: match.lastUser,
                           description: userList[matchData.id].description,
-                          ancillaryPics: userList[matchData.id].ancilaryPics,
+                          ancillaryPics: userList[matchData.id].ancillaryPics,
                           school: userList[matchData.id].school,
                           work: userList[matchData.id].work
                         }
                     })
+                    console.log('matchList: ',matchList);
                     return res.send(matchList);
                   })
                   .catch((error) => console.log("Error writing document: ",error));
@@ -209,7 +210,7 @@ exports.getDislikes = functions.https.onRequest((req,res) => {
 
 exports.oldNewQueue = functions.https.onRequest((req, res) => {
  
-  const id = req.id;
+  const id = req.query.id;
 
   return db.collection(`users`).get()
   .then((queueList) => {

@@ -80,10 +80,10 @@ export const startNewUser = (newUserData) => {
         description = '',
         profilePic = '',
         ancillaryPics = [],
-        gender = 'male',
+        gender = 'female',
         active = 1 // active indicator
     } = newUserData;
-    const newUserObj = { uid, age, name, work, school, description, profilePic, ancillaryPics, active};
+    const newUserObj = { uid, age, gender, name, work, school, description, profilePic, ancillaryPics, active};
 
     db.collection("users").doc(uid).set({...newUserObj})
         .then(() => dispatch(newUser(newUserObj)))
@@ -114,6 +114,23 @@ export const changeAge = (age) => ({
     }
 });
 
+export const startChangeGender = (gender) => {
+    return (dispatch,getState) => {
+        const id = getState().authReducer.uid;
+        db.collection("users").doc(id).update({gender})
+            .then(() => dispatch(changeGender(gender)))
+            .catch((error) => console.log("Error writing document: ",error))
+    }
+}
+
+// Change Age
+export const changeGender = (gender) => ({
+    type: 'CHANGE_GENDER',
+    updates: {
+        gender
+    }
+});
+
 
 export const startProfilePicture = (profilePic) => {
     //console.log('profile pic update: ',profilePic)
@@ -134,7 +151,7 @@ export const changeProfilePicture = (profilePic) => ({
 
 export const startChangeAncillaryPictures = (urlList) => {
     return (dispatch,getState) => {
-        console.log('urlList: ',urlList);
+        //console.log('urlList: ',urlList);
         const id = getState().authReducer.uid;
         db.collection("users").doc(id).update({ancillaryPics:urlList})
             .then(() => dispatch(changeAncillaryPictures(urlList)))

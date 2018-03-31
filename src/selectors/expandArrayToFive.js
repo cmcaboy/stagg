@@ -5,11 +5,11 @@ export default (a) => {
   if (a.length >= NUM_PHOTOS) {
     return a;
   } else {
-    console.log('a: ',a);
+    //console.log('a: ',a);
     for(i = 0; i < NUM_PHOTOS - 1; i++) {
       b[i] = a[i]? a[i] : PHOTO_ADD_URL;
     }
-    console.log('b: ',b);
+    //console.log('b: ',b);
     return b;
   }
 }

@@ -86,6 +86,18 @@ class EditProfile extends Component {
               updateValue={this.props.startChangeName}
             />
             <CondInput 
+              field="Age"
+              value={this.props.age}
+              updateValue={this.props.startChangeAge}
+            />
+            {/*
+            <CondInput 
+              field="Gender"
+              value={this.props.gender}
+              updateValue={this.props.startChangeGender}
+            />
+            */}
+            <CondInput 
               field="Education"
               value={this.props.school}
               updateValue={this.props.startChangeSchool}
@@ -94,11 +106,6 @@ class EditProfile extends Component {
               field="Work"
               value={this.props.work}
               updateValue={this.props.startChangeWork}
-            />
-            <CondInput 
-              field="Age"
-              value={this.props.age}
-              updateValue={this.props.startChangeAge}
             />
             <CondInput 
               field="Description"
@@ -155,6 +162,7 @@ const styles = StyleSheet.create({
 const mapDispatchToProps = (dispatch) => {
     return {
         startChangeAge: (age) => dispatch(startChangeAge(age)),
+        startChangeGender: (gender) => dispatch(startChangeGender(gender)),
         startProfilePicture: (profilePic) => dispatch(startProfilePicture(profilePic)),
         startChangeAncillaryPictures: (urlList) => dispatch(startChangeAncillaryPictures(urlList)),
         startChangeName: (name) => dispatch(startChangeName(name)),
@@ -166,10 +174,8 @@ const mapDispatchToProps = (dispatch) => {
     }
 }
 
-
-
 const mapStateToProps = (state,ownProps) => {
-  console.log('state: ',state);
+  //console.log('state: ',state);
     return {
         profilePic: state.profileReducer.profilePic,
         name: state.profileReducer.name,
