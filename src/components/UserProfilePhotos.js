@@ -27,6 +27,7 @@ class UserProfilePhotos extends Component {
       currentImage: 0,
       pics: this.props.pics.filter(pic => pic !== PHOTO_ADD_URL)
     }
+
   }
 
   clickLeftSide = () => {
@@ -57,34 +58,47 @@ class UserProfilePhotos extends Component {
 
   render() {
     const {userPics,userPhoto,touchablePics,leftClicker,rightClicker,picIndicator} = styles;
+    const {picHeight = SCREEN_WIDTH,picWidth = SCREEN_WIDTH,customPicStyle,borderRadius} = this.props;
 
     return (        
         <View style={userPics}>
-          {this.state.pics.map((pic,i) => (    
+        
+          {this.state.pics.map((pic,i) => (
               <ImageBackground 
-                key={pic} 
+                key={i} 
                 source={{uri:pic}} 
-                style={[userPhoto,{display:i === this.state.currentImage? 'flex':'none'}]}
+                style={[
+                  userPhoto,
+                  {display:i === this.state.currentImage? 'flex':'none'},
+                  {height:picHeight},
+                  {width:picWidth},
+                  customPicStyle,
+                  {borderRadius:borderRadius}
+                ]}
+                imageStyle={{borderRadius: borderRadius}}
               >
+                
                 <View style={picIndicator}>
-                  {this.state.pics.map((_,i) => {
-                    return i === this.state.currentImage ? (
-                      <FontAwesome key={i} name="circle" size={12} color="white" style={{backgroundColor:'transparent',paddingHorizontal:2}}/>
+                  {this.state.pics.map((_,i2) => {
+                    return i2 === this.state.currentImage ? (
+                      <FontAwesome key={i2} name="circle" size={12} color="white" style={{backgroundColor:'transparent',paddingHorizontal:2}}/>
                     ) : (
-                      <FontAwesome key={i} name="circle-o" size={12} color="white" style={{backgroundColor:'transparent',paddingHorizontal:2}}/>
+                      <FontAwesome key={i2} name="circle-o" size={12} color="white" style={{backgroundColor:'transparent',paddingHorizontal:2}}/>
                     )
                   })}
                 </View>
+                
                 <View style={touchablePics}>
                   <TouchableWithoutFeedback onPress={this.clickLeftSide}>
-                    <View style={leftClicker}></View>
+                    <View style={[leftClicker,{height:picHeight}]}></View>
                   </TouchableWithoutFeedback>          
                   <TouchableWithoutFeedback onPress={this.clickRightSide}>
-                    <View style={rightClicker} ></View>
+                    <View style={[rightClicker,{height:picHeight}]} ></View>
                   </TouchableWithoutFeedback>          
                 </View>
-              </ImageBackground>
-            ))}  
+                </ImageBackground>
+              ))}
+              {this.props.children}
         </View>
     )
   }

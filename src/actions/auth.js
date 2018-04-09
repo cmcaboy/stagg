@@ -6,7 +6,16 @@ export const startFacebookLogin = () => {
     loading(true);
     return async (dispatch,getState) => {
         const {type,token} = await Expo.Facebook.logInWithReadPermissionsAsync('424631184639658',
-            {permissions:['public_profile','email']}
+            {permissions:[
+                'public_profile',
+                'email',
+               // 'user_about_me',
+                'user_photos',
+               // 'user_education_history',
+               // 'user_work_history',
+                'user_birthday',
+                'user_hometown'
+        ]}
         )
 
         // the /me notation will refer to the userid referenced from the access token.
@@ -75,6 +84,11 @@ export const startLoading = () => ({
 export const finishLoading = () => ({
     type: 'FINISH_LOADING',
     loggedIn: true
+});
+
+export const matchLoading = (matchLoading) => ({
+    type: 'MATCH_LOADING',
+    matchLoading
 });
 
 export const login = (uid) => ({

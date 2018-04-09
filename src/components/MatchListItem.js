@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import {CirclePicture} from './common';
+import {CirclePicture,MyAppText} from './common';
 
 const MatchListItem = ({name,picture,onPress,lastMessage = "test"}) => {
     return (
@@ -8,10 +8,10 @@ const MatchListItem = ({name,picture,onPress,lastMessage = "test"}) => {
         <View style={styles.itemContainer}>
           <CirclePicture imageURL={picture} picSize="small"/>
           <View style={styles.textContainer}>
-            <Text>
+            <MyAppText>
               {name}
-            </Text>
-            <Text style={styles.lastMessage}>{lastMessage}</Text>
+            </MyAppText>
+            <MyAppText style={styles.lastMessage}>{lastMessage}</MyAppText>
           </View>
         </View>
       </TouchableOpacity>

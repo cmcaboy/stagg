@@ -25,7 +25,8 @@ class PhotoSelector extends React.Component {
     super(props);
     this.state = {
       isLoading: this.props.urlList.map(item => false),
-      isSelected: this.props.urlList.map(item => false)
+      isSelected: this.props.urlList.map(item => false),
+      urlList: this.props.urlList
     }
   }
 
@@ -49,7 +50,7 @@ class PhotoSelector extends React.Component {
         if(i===0) {
           this.props.startProfilePicture(url);
         } else {
-          const urlList = this.props.urlList.splice(1).map((item,index) => {
+          const urlList = this.state.urlList.splice(1).map((item,index) => {
             //console.log('item: ',item);
             //console.log('index: ',index);
             return index === i-1 ? url : item
@@ -82,7 +83,7 @@ class PhotoSelector extends React.Component {
   }
 
   switchPicPosition = (a,b) => {
-    let temp = this.props.urlList;
+    let temp = this.state.urlList;
     const tempItem = temp[a];
     temp[a] = temp[b];
     temp[b] = tempItem;
@@ -96,7 +97,7 @@ class PhotoSelector extends React.Component {
 
   resetSelected() {
     //console.log('reset selected');
-    this.setState({isSelected: this.props.urlList.map(item => false)})
+    this.setState({isSelected: this.state.urlList.map(item => false)})
   }
 
   async selectImage(index) {
@@ -109,8 +110,18 @@ class PhotoSelector extends React.Component {
           a.push(index);
         }
       })
-      await this.props.switchPicPosition(a[0],a[1]);
+      await this.switchPicPosition(a[0],a[1]);
       this.resetSelected();
+    }
+  }
+
+  // I had to do this for Android. The images would not re-render properly
+  // without it.
+  componentWillReceiveProps(nextProps) {
+    //console.log('willReceiveProps: ',nextProps);
+    if(nextProps.urlList) {
+      this.setState({urlList:nextProps.urlList});
+      this.setState({isSelected: nextProps.urlList.map(item => false)})
     }
   }
 
@@ -120,7 +131,7 @@ class PhotoSelector extends React.Component {
     //console.log('isLoading: ',this.state.isLoading);
     return (
         <View style={styles.container}>
-          {this.props.urlList.map((item,index) => {
+          {this.state.urlList.map((item,index) => {
             //console.log('item: ',item);
             return this.state.isLoading[index] ? (
               <Spinner key={index} size="small" style={styles.photo}/>

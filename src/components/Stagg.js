@@ -18,10 +18,13 @@ import {
 import {connect} from 'react-redux';
 import {startLike,startDislike,startMatch,startRequeue} from '../actions/matchList';
 import {startSetCoords} from '../actions/profile';
+import {matchLoading} from '../actions/auth';
 //import {Card} from 'react-native-elements';
 import {Card} from './common';
 import {Location,Permissions} from 'expo';
 import {Foundation,Ionicons} from '@expo/vector-icons';
+import StaggCard from './StaggCard';
+import {Spinner} from './common';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -43,6 +46,11 @@ class Stagg extends Component {
             onPanResponderMove: (event,gesture) => {
                 position.setValue({x:gesture.dx,y:gesture.dy})
             },
+            onMoveShouldSetPanResponder: (evt, gestureState) => {
+                //return true if user is swiping, return false if it's a single click
+                //console.log('gestureState: ',{...gestureState});
+                return !(Math.abs(gestureState.dx) <= 0.5 && Math.abs(gestureState.dy) <= 0.5) 
+            },
             onPanResponderRelease: (event,gesture) => {
                 if(gesture.dx > SWIPE_THRESHOLD) {
                     this.forceSwipe('right');
@@ -53,6 +61,8 @@ class Stagg extends Component {
                 }
             }
         })
+
+        this.locationTracker;
 
         this.position = position;
         this.state = {panResponder, position,index:0, status: null}
@@ -88,6 +98,8 @@ class Stagg extends Component {
             })
     }
 
+    ComponentWillUnmount = () => this.locationTracker.remove();
+
     askPermission = () => {
         Permissions.askAsync(Permissions.LOCATION)
         .then(({status}) => {
@@ -102,7 +114,7 @@ class Stagg extends Component {
     }
 
     trackLocation = () => {
-        Location.watchPositionAsync({
+        this.locationTracker = Location.watchPositionAsync({
             // Need to look at docs to determine parameter values
             enableHighAccuracy: false,
             timeInterval: 1000 * 60 * 15,
@@ -162,25 +174,21 @@ class Stagg extends Component {
 
     renderCard(prospect) {
         // Instead of rendering a card, I could render an ImageBackground
+        //console.log('stagg ancillary: ',prospect.ancillaryPics);
         return (
-            /*
-            <Card
+            //<Text>{prospect.name}</Text>
+            
+            <StaggCard 
                 key={prospect.id}
-                image={{uri:prospect.profilePic}}
-                imageStyle={{height:(SCREEN_HEIGHT*.75)}}
-            >
-                <Text key={prospect.id}>{prospect.name}</Text>
-            </Card>
-            */
-           <View style={{margin:5}}>
-            <ImageBackground 
-                source={{uri:prospect.profilePic}}
-                style={styles.prospectImage}
-                imageStyle={{borderRadius:10}}
-            >
-                    <Text style={styles.prospectText}>{prospect.name}</Text>   
-            </ImageBackground>
-           </View>
+                pics={[prospect.profilePic,...prospect.ancillaryPics]}
+                //pics={[prospect.profilePic]}
+                name={prospect.name}
+                work={prospect.work}
+                school={prospect.school}
+                description={prospect.description}
+                distanceApart={prospect.distanceApart}
+            />
+            
         )
     }
 
@@ -259,13 +267,20 @@ class Stagg extends Component {
             )
         } else if (this.state.status === null) {
             return (
-                <ActivityIndicator style={{marginTop:30}} />
+                <Spinner />
             )
         }
     }
 
     render() {
-        return this.renderContent()
+        // Implement Loading here
+        //console.log('isMatchLoading: ',this.props.isMatchLoading);
+        //console.log('status: ',this.state.status);
+        if(this.props.isMatchLoading) {
+            return <Spinner />
+        } else {
+            return this.renderContent();
+        }
     }
 }
 
@@ -345,7 +360,8 @@ const mapDispatchToProps = (dispatch) => {
         startDislike: (id) => dispatch(startDislike(id)),
         startMatch: (id) => dispatch(startMatch(id)),
         startRequeue: (id) => dispatch(startRequeue(id)),
-        startSetCoords: (coords) => dispatch(startSetCoords(coords))
+        startSetCoords: (coords) => dispatch(startSetCoords(coords)),
+        matchLoading: (matchLoading) => dispatch(matchLoading(matchLoading))
     }
 }
 
@@ -355,7 +371,8 @@ const mapStateToProps = (state,ownProps) => {
         prospectiveList: state.matchListReducer.queue,
         likeList: state.matchListReducer.likeList,
         dislikeList: state.matchListReducer.dislikeList,
-        matchList: state.matchListReducer.matches
+        matchList: state.matchListReducer.matches,
+        isMatchLoading: state.authReducer.matchLoading
     }
 }
 

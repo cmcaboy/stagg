@@ -1,48 +1,69 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import {CirclePicture,Card} from './common';
+import {View, Text, TouchableOpacity, StyleSheet, Platform, Dimensions } from 'react-native';
+import {CirclePicture,Card,MyAppText} from './common';
 import {connect} from 'react-redux';
 import {startLogout} from '../actions/auth';
 import {MaterialCommunityIcons,Ionicons,MaterialIcons} from '@expo/vector-icons';
+import { PRIMARY_COLOR } from '../variables';
 
-const BUTTON_OPACITY = 0.75;
+const ICON_OPACITY = 0.75;
+const ICON_SIZE = Dimensions.get('window').height *0.05;
 
 const Settings = (props) => {
     const {profilePic = 'https://placebear.com/300/200',name,work,school} = props;
+    // console.log('work: ',work);
+    // console.log('school: ',school);
+    // console.log('school: ',!!school);
+    // console.log('work: ',!!work);
+
+    const renderSubheading = () => {
+        if (work || school) {
+            if(school) {
+                return (
+                    <View style={styles.subHeading}>
+                        <Ionicons name="md-school" size={14} color="black" style={styles.schoolText}/>
+                        <MyAppText style={[styles.schoolText,{paddingLeft:4}]}>{school}</MyAppText>
+                    </View>
+                )
+            } else {
+                return (
+                    <View style={styles.subHeading}>
+                        <MaterialIcons name="work" size={14} color="black" style={styles.schoolText}/>
+                        <MyAppText style={[styles.schoolText,{paddingLeft:4}]}>{work}</MyAppText>
+                    </View>
+                )
+            }
+        }
+    }
+
     return (
         <View style={styles.settingsContainer}>
             
             <View style={styles.miniProfile}> 
-                <CirclePicture size='large' imageURL={profilePic} />
+                <CirclePicture size='large' imageURL={profilePic} auto={true}/>
                 <View style={styles.profileText}>
-                    <Text style={[styles.nameText,{textAlign:'center'}]}>{name}</Text>
-                    {school? (
-                        <View style={styles.subHeading}>
-                            <Ionicons name="md-school" size={14} color="black" style={styles.schoolText}/>
-                            <Text style={[styles.schoolText,{paddingLeft:4}]}>{school}</Text>
-                        </View>
-                    ) : (
-                        <View style={styles.subHeading}>
-                            <MaterialIcons name="work" size={14} color="black" style={styles.schoolText}/>
-                            <Text style={[styles.schoolText,{paddingLeft:4}]}>{work}</Text>
-                        </View>
-                    )}
-                        </View>
+                    <MyAppText style={styles.nameText}>{name}</MyAppText>
+                    {renderSubheading()}
+                    
+                </View>
+                <View style={styles.horizontalLine}/>
             </View>
+            
             <View style={styles.options}>
+                
                 <TouchableOpacity 
                     onPress={() => props.navigation.navigate('EditSettings')}
                     style={styles.buttons}
                 >
                     <Ionicons 
                         name="md-settings"
-                        size={32}
+                        size={ICON_SIZE}
                         color="black"
-                        style={{opacity:BUTTON_OPACITY}}
+                        style={{opacity:ICON_OPACITY}}
                     />
-                    <Text style={styles.optionText}>
+                    <MyAppText style={styles.optionText}>
                         Settings
-                    </Text>
+                    </MyAppText>
                 </TouchableOpacity>
                 <TouchableOpacity 
                     onPress={() => props.navigation.navigate('EditProfile')}
@@ -50,13 +71,13 @@ const Settings = (props) => {
                 >
                     <MaterialCommunityIcons 
                         name="account-edit"
-                        size={32}
+                        size={ICON_SIZE}
                         color="black"
-                        style={{opacity:BUTTON_OPACITY}}
+                        style={{opacity:ICON_OPACITY}}
                     />
-                    <Text style={styles.optionText}>
+                    <MyAppText style={styles.optionText}>
                         Edit Info
-                    </Text>
+                    </MyAppText>
                 </TouchableOpacity>
             </View>
             <View>
@@ -66,13 +87,13 @@ const Settings = (props) => {
                 >
                     <MaterialCommunityIcons 
                         name="logout"
-                        size={32}
+                        size={ICON_SIZE}
                         color="black"
-                        style={{opacity:BUTTON_OPACITY}}
+                        style={{opacity:ICON_OPACITY}}
                     />
-                    <Text style={styles.optionText}>
+                    <MyAppText style={styles.optionText}>
                     Log out
-                    </Text>
+                    </MyAppText>
                 </TouchableOpacity>
             </View>
         
@@ -98,29 +119,31 @@ const styles = StyleSheet.create({
     },
     miniProfile: {
         flex: 2,
-        justifyContent: 'space-around',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         marginTop: 20,
         minHeight: 100
     },
     profileText: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 0
+        marginTop: 10
     },
     options: {
         flex: 1,
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
         alignItems: 'center',
-        width: 200
+        width: '100%'
     },
     optionText: {
         opacity: 0.7
     },
     nameText: {
-        fontSize: 30
+        fontSize: 30,
+        color: PRIMARY_COLOR,
+        textAlign:'center',
+        fontFamily:'oxygen-regular'
     },
     schoolText: {
         fontSize: 14,
@@ -133,7 +156,14 @@ const styles = StyleSheet.create({
     subHeading: {
         flexDirection: 'row',
         marginTop: 2
-    }
+    },
+    horizontalLine: {
+        borderBottomColor:'black',
+        borderBottomWidth:1,
+        paddingVertical: 10,
+        marginBottom: 10,
+        flex:1
+    },
 });
 
 const mapDispatchToProps = (dispatch) => {

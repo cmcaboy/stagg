@@ -6,7 +6,7 @@ const matchListReducerDefaultState = {
 };
 
 const matchListReducer = (state = matchListReducerDefaultState,action = {}) => {
-    //console.log(action);
+    console.log(action);
     switch(action.type) {
         case 'LOAD_LISTS':
             return {

@@ -9,3 +9,4 @@ export * from './ProspectCard';
 export * from './Prospect';
 export * from './CondInput';
 export * from './ActionIcon';
+export * from './MyAppText';

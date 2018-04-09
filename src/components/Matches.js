@@ -8,9 +8,10 @@ import {
     ScrollView 
 } from 'react-native';
 import {connect} from 'react-redux';
-import {CirclePicture} from './common';
+import {CirclePicture,MyAppText} from './common';
 import MatchListItem from './MatchListItem';
 import {Ionicons} from '@expo/vector-icons';
+import { PRIMARY_COLOR } from '../variables';
 
 class Matches extends Component {
     constructor(props) {
@@ -24,8 +25,8 @@ class Matches extends Component {
                     size={100}
                     color="black"
                 />
-                <Text>You do not have any matches.</Text>
-                <Text>Better get to swipping!</Text>
+                <MyAppText>You do not have any matches.</MyAppText>
+                <MyAppText>Better get to swipping!</MyAppText>
             </View>
         )
     }
@@ -38,7 +39,7 @@ class Matches extends Component {
             return (
                 <View style={styles.matchContainer}>
                     <View style={styles.newMatchesContainer}>
-                        <Text>New Matches</Text>
+                        <MyAppText style={styles.heading}>New Matches</MyAppText>
                         <ScrollView
                             horizontal={true}
                         >
@@ -56,7 +57,7 @@ class Matches extends Component {
                                 >
                                     <View style={styles.newMatch}>
                                         <CirclePicture imageURL={match.profilePic} picSize="small"/>
-                                        <Text>{match.name}</Text>
+                                        <MyAppText>{match.name}</MyAppText>
                                     </View>
                                 </TouchableOpacity>
                             )
@@ -64,7 +65,7 @@ class Matches extends Component {
                         </ScrollView>
                     </View>
                     <View style={styles.messagesContainer}>
-                        <Text>Messages</Text>
+                        <MyAppText style={styles.heading}>Messages</MyAppText>
                         <ScrollView>
                             {matches.filter(match => !!match.lastMessage).map((match) => (
                             <MatchListItem 
@@ -108,10 +109,11 @@ const styles = StyleSheet.create({
 
     },
     newMatchesContainer: {
-        flex: 1
+        flex: 2
     },
     messagesContainer: {
-        flex: 3
+        flex: 5,
+        //marginTop: 10
     },
     newMatch: {
         margin: 5,
@@ -124,6 +126,14 @@ const styles = StyleSheet.create({
         flex:1,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    heading: {
+        fontSize: 20,
+        fontWeight: '900',
+        color: PRIMARY_COLOR,
+        marginTop: 10,
+        marginBottom: 5,
+        //textDecorationLine: 'underline'
     }
 });
 

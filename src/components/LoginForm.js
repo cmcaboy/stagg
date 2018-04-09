@@ -2,13 +2,14 @@ import React, {Component} from 'react';
 import firebase from 'firebase';
 import {View,Text} from 'react-native';
 import {connect} from 'react-redux';
-import {Card,CardSection,Button,Spinner,Input} from './common';
+import {Card,CardSection,Button,Spinner,Input, MyAppText} from './common';
 import Expo from 'expo';
 import {
     startEmailLogin,
     startFacebookLogin,
     changeEmail,
     changePassword} from '../actions/auth';
+import { SECONDARY_COLOR, PRIMARY_COLOR, BACKGROUND_COLOR } from '../variables';
 //import Input from './Input';
 
 
@@ -40,7 +41,8 @@ class LoginForm extends Component {
     }
     render() {
         return (
-            <Card>
+            <View style={styles.loginContainer}>
+                {/*
                 <CardSection>
                     <Input 
                         placeholder="user@gmail.com"
@@ -59,18 +61,24 @@ class LoginForm extends Component {
                         secureTextEntry={true}
                     />
                 </CardSection>
+                */}
+                <View style={styles.content}>
                 
-                <Text style={styles.errorTextStyle}>
-                    {this.props.error}
-                </Text>
-
-                <CardSection>
-                    {this.renderButton()}
-                </CardSection>
-                <CardSection>
-                    {this.renderButtonFB()}
-                </CardSection>
-            </Card>
+                    <Text style={styles.title}>Manhattan Stag</Text>
+                    <Text style={styles.errorTextStyle}>
+                        {this.props.error}
+                    </Text>
+                    {/*
+                    <CardSection>
+                        {this.renderButton()}
+                    </CardSection>
+                    */}
+                    <CardSection style={{borderBottomWidth: 0}}>
+                        {this.renderButtonFB()}
+                    </CardSection>
+                </View>
+                <View style={{flex:1}}/>
+            </View>
         )
     }
 }
@@ -86,6 +94,21 @@ const styles = {
     },
     buttonTextFBStyle: {
         color: "white"
+    },
+    loginContainer: {
+        flex: 1,
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        backgroundColor: BACKGROUND_COLOR
+    },
+    title: {
+        fontSize: 32,
+        color: PRIMARY_COLOR
+    },
+    content: {
+        flex: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
     }
 }
 

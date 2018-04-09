@@ -13,6 +13,7 @@ import {connect} from 'react-redux';
 import getUserProfile from '../selectors/getUserProfile';
 import {Ionicons,MaterialIcons,FontAwesome} from '@expo/vector-icons';
 import UserProfilePhotos from './UserProfilePhotos';
+import { MyAppText } from './common';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -29,7 +30,7 @@ class UserProfile extends Component {
   }
 
   render() {
-    console.log('props: ',this.props); 
+    //console.log('props: ',this.props); 
     const {name, school, work, description,profilePic,ancillaryPics} = this.props.user
     const {userProfileContainer,userPics,userInfo,iconText,userPhoto,touchablePics,
       nameText,subHeading,schoolText,userDescription,leftClicker,rightClicker,
@@ -42,22 +43,22 @@ class UserProfile extends Component {
           pics={[profilePic, ...ancillaryPics]}
         />
         <View style={userInfo}>
-          <Text style={nameText}>{name}</Text>
+          <MyAppText style={nameText}>{name}</MyAppText>
           {!!school && (
             <View style={subHeading}>
               <Ionicons name="md-school" size={14} color="black" style={iconText}/>
-              <Text style={schoolText}>{school}</Text>
+              <MyAppText style={schoolText}>{school}</MyAppText>
             </View>
           )}
           {!!work && (
             <View style={subHeading}>
               <MaterialIcons name="work" size={14} color="black" style={iconText}/>
-              <Text style={[schoolText,{paddingLeft:4}]}>{work}</Text>
+              <MyAppText style={[schoolText,{paddingLeft:4}]}>{work}</MyAppText>
             </View>
           )}  
           </View>
         <View style={userDescription}>
-          {!!description && <Text>{description}</Text>}
+          {!!description && <MyAppText>{description}</MyAppText>}
         </View>
         </ScrollView>
       </View>
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state, ownProps) => {
   //console.log('id: ',ownProps.navigation.state.params.id);
-  console.log('matchListReducer: ',state.matchListReducer)
+  //console.log('matchListReducer: ',state.matchListReducer)
   return {
     // Returns matches profile
     user: getUserProfile(ownProps.navigation.state.params.id,state.matchListReducer.matches)

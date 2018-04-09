@@ -1,8 +1,12 @@
 import firebase from '../firebase';
 import {db} from '../firebase';
+import {GOOGLE_MAPS_API_KEY} from '../variables';
+import {matchLoading} from '../actions/auth';
 
 export const startLoadLists = (uid) => {
     return (dispatch,getState) => {
+
+        console.log('load list: ',uid);
 
         fetch(`https://us-central1-stagg-test.cloudfunctions.net/getLikes?uid=${uid}`)
             .then((data) => data.json())
@@ -87,14 +91,18 @@ export const matchList = (matchList) => ({
     matchList
 });
 
+
+
 export const startLike = (likedId) => {
     return (dispatch,getState) => {
         const id = getState().authReducer.uid;
         db.collection(`users/${id}/likes`).add({likedId})
             .then(() => dispatch(like(likedId)))
             .catch((error) => console.log("Error writing document: ",error));
-    
         }
+        db.collection(`users/${id}/queue`).doc(`${likedId}`).delete()
+            .then(() => console.log('removed queue id: ',likedId))
+            .catch((e) => console.log('could not remove likedId: ',likedId))
 }
 export const like = (id) => ({
         type: 'LIKE',
@@ -147,6 +155,8 @@ export const startNewQueue = (id) => {
         }
         */
 
+        dispatch(matchLoading(true))
+
         // Workaround to avoid nasty race condition
         // ------------------------------------------------------------------------
         function sleep(ms) {
@@ -158,34 +168,21 @@ export const startNewQueue = (id) => {
         // ------------------------------------------------------------------------
         
         const OppositeGender = (getState().profileReducer.gender==="male")?"female":"male";
-        const queryList = await db.collection(`users`)
-                .where("active","==",1)
-                .where("gender","==",OppositeGender)
-                .get()
+        console.log(getState().profileReducer.coords);
+        const lat = getState().profileReducer.coords.latitude;
+        const lon = getState().profileReducer.coords.longitude;
+        const radius =          getState().settingsReducer.distance;
 
-        let list = queryList.docs.map((doc) => {
-            const docData = doc.data();
-            return {
-            id:doc.id,
-            name: docData.name,
-            profilePic: docData.profilePic
-            }
-        });
-        let likeList = await db.collection(`users/${id}/likes`).get();
-        const likes = likeList.docs.map((doc) => {
-            const docData = doc.data();
-            return docData.likedId;
-            });
-            let dislikeList = await db.collection(`users/${id}/dislikes`).get();
-            const dislikes = dislikeList.docs.map((doc) => {
-                const docData = doc.data();
-                return docData.dislikedId;
-            });
-            
-            const excludeList = new Set([...likes,...dislikes,id]);
-            list = new Set([...list]);
+        const url = `https://us-central1-stagg-test.cloudfunctions.net/getQueue?id=${id}&lat=${lat}&lon=${lon}&OppositeGender=${OppositeGender}&radius=${radius}`;
 
-            dispatch(newqueue([...list].filter(x => !excludeList.has(x.id))));
+        fetch(url)
+            .then((data) => data.json())
+            .then((newQueue) => {
+                dispatch(newqueue(newQueue))
+                dispatch(matchLoading(false))
+            })
+            .catch((error) => console.log("Error fetching Likes: ",error))
+
     }
 };
 

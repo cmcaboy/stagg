@@ -79,11 +79,12 @@ export const startNewUser = (newUserData) => {
         school = '',
         description = '',
         profilePic = '',
+        coords = {},
         ancillaryPics = [],
         gender = 'female',
         active = 1 // active indicator
     } = newUserData;
-    const newUserObj = { uid, age, gender, name, work, school, description, profilePic, ancillaryPics, active};
+    const newUserObj = { uid, age, gender, name, work, school, description, profilePic, ancillaryPics, active, coords};
 
     db.collection("users").doc(uid).set({...newUserObj})
         .then(() => dispatch(newUser(newUserObj)))

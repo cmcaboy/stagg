@@ -8,6 +8,7 @@ import {
   startChangeDistance
 } from '../actions/settings';
 import {Card} from './common';
+import { PRIMARY_COLOR } from '../variables';
 
 const SLIDER_WIDTH = Dimensions.get('window').width * 0.87;
 
@@ -31,7 +32,7 @@ class EditSettings extends Component {
             textAlign: 'center',
             fontWeight:'normal',
             fontSize: 22,
-            color: '#606060'
+            color: PRIMARY_COLOR
         }
 })
     

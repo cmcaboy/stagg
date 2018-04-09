@@ -31,6 +31,11 @@ const authReducer = (state = {}, action) => {
                 ...state,
                 loggedIn: action.loggedIn
             }
+        case 'MATCH_LOADING':
+            return {
+                ...state,
+                matchLoading: action.matchLoading
+            }
         case 'CHANGE_EMAIL':
             return {
                 ...state,

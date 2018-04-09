@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
 import {GiftedChat} from 'react-native-gifted-chat';
+import KeyboardSpacer from 'react-native-keyboard-spacer';
 import {db} from '../firebase';
 import {connect} from 'react-redux';
 import {startUpdateLastMessage,startUpdateLastName} from '../actions/matchList';
-import {CirclePicture} from './common';
+import {CirclePicture,MyAppText} from './common';
 
 class Messenger extends Component {
     
@@ -25,7 +26,7 @@ class Messenger extends Component {
                 <TouchableOpacity onPress={() => navigation.navigate('UserProfile',{id:navigation.state.params.otherId})}>
                     <CirclePicture imageURL={navigation.state.params.pic} picSize="mini" />
                 </TouchableOpacity>
-                <Text style={styles.textHeader}>{navigation.state.params.name}</Text>
+                <MyAppText style={styles.textHeader}>{navigation.state.params.name}</MyAppText>
                 <View style={{width: 100}}></View>
             </View>
         ),
@@ -103,6 +104,7 @@ class Messenger extends Component {
                 showUserAvatar={false}
                 onPressAvatar={(user) => this.props.navigation.navigate('UserProfile',{id:user._id})}
             />
+            {Platform.OS === 'android' ? <KeyboardSpacer /> : null }
         </View>
         )
     }

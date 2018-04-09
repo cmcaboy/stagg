@@ -10,31 +10,21 @@ import EditProfile from '../components/EditProfile';
 import UserProfile from '../components/UserProfile';
 import { FontAwesome, Ionicons, Entypo, MaterialCommunityIcons } from '@expo/vector-icons';
 import {Platform} from 'react-native';
+import {TAB_BAR_HEIGHT,PRIMARY_COLOR} from '../variables';
 
 const Tabs = TabNavigator({
     Settings: {
         screen: Settings,
         navigationOptions: {
             tabBarLabel: 'Settings',
-            tabBarIcon: ({ tintColor }) => <MaterialCommunityIcons name='account' size={30} color={tintColor} />
+            tabBarIcon: ({ tintColor }) => <MaterialCommunityIcons name='account' size={24} color={tintColor} />
           }
     },
-    // Taking the leaderboard out for now. I would prefer to have 3 tabs rather than 4
-    // as it is more aesthetically pleasing.
-    /*
-    Leaderboard: {
-        screen: Leaderboard,
-        navigationOptions: {
-            tabBarLabel: 'Leaderboard',
-            tabBarIcon: ({ tintColor }) => <FontAwesome name='plus-square' size={30} color={tintColor} />
-          }
-    },
-    */
     Stagg: {
         screen: Stagg,
         navigationOptions: {
             tabBarLabel: 'Stagg',
-            tabBarIcon: ({ tintColor }) => <Entypo name='heart' size={30} color={tintColor} />
+            tabBarIcon: ({ tintColor }) => <Entypo name='heart' size={24} color={tintColor} />
           }
     },
     Matches: {
@@ -42,19 +32,21 @@ const Tabs = TabNavigator({
         navigationOptions: {
             tabBarLabel: 'Matches',
             
-            tabBarIcon: ({ tintColor }) => <Entypo name='chat' size={30} color={tintColor} />
+            tabBarIcon: ({ tintColor }) => <Entypo name='chat' size={24} color={tintColor} />
           }
     }
 }, {
+        initialRouteName: 'Stagg',
         navigationOptions: {
           header: null
         },
         tabBarOptions: {
-          activeTintColor: Platform.OS === 'ios' ? 'purple' : 'white',
+          activeTintColor: Platform.OS === 'ios' ? PRIMARY_COLOR : 'white',
           showLabel: false,
+          showIcon: true,
           style: {
-            height: 56,
-            backgroundColor: Platform.OS === 'ios' ? 'white' : 'purple',
+            height: TAB_BAR_HEIGHT,
+            backgroundColor: Platform.OS === 'ios' ? 'white' : PRIMARY_COLOR,
             shadowColor: 'rgba(0, 0, 0, 0.24)',
             shadowOffset: {
               width: 0,
@@ -82,6 +74,13 @@ const MainNavigator = StackNavigator({
     UserProfile: {
         screen: UserProfile
     }
-});
+},
+{
+    mode: 'card',
+    headerMode: 'screen',
+    headerTitleStyle: {height: TAB_BAR_HEIGHT}
+
+}
+);
 
 export default MainNavigator;

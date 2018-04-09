@@ -35,6 +35,7 @@ import {firebase} from '../firebase';
 
 import expandArrayToFive from '../selectors/expandArrayToFive';
 import PhotoSelector from './PhotoSelector';
+import { PRIMARY_COLOR } from '../variables';
 
 class EditProfile extends Component {
   constructor(props) {
@@ -53,7 +54,7 @@ class EditProfile extends Component {
             textAlign: 'center',
             fontWeight:'normal',
             fontSize: 22,
-            color: '#606060'
+            color: PRIMARY_COLOR
         }
   })
 
@@ -67,7 +68,7 @@ class EditProfile extends Component {
   }
 
   render() {
-    console.log()
+    console.log('ancillaryPics: ',this.props.ancillaryPics);
     return (
       <ScrollView contentContainerStyle={styles.settingsContainer}>
       <KeyboardAvoidingView
