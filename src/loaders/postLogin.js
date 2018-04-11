@@ -80,7 +80,7 @@ export const postLogin = (uid,token,dispatch) => {
       dispatch(startLoadSettings(uid));
       dispatch(finishLoading());
       dispatch(startLoadLists(uid)); // Like, Dislike, Matches
-      dispatch(startNewQueue(uid));   // Potential List
+      dispatch(startNewQueue());   // Potential List
 
     })
     .catch((error) => console.log("FB load - Error getting document: ",error))

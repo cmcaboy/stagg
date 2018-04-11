@@ -412,10 +412,12 @@ exports.onLike = functions.firestore
     return m;
   }
   
-  const generateNewQueue = async (id,OppositeGender,lat,lon,radius) => {
+  const generateNewQueue = async (id,OppositeGender,lat,lon,radius,exceptionsParam) => {
 
     const DEBUG = 0;
     const MAX_QUEUE_SIZE = 50;
+
+    const exceptions = !!exceptionsParam ? exceptionsParam : [];
 
     const queryList = await db.collection(`users`)
                 .where("active","==",1)
@@ -470,7 +472,7 @@ exports.onLike = functions.firestore
 
         console.log('dislikes: ',dislikes);
         
-        const excludeList = new Set([...likes,...dislikes,id]);
+        const excludeList = new Set([...likes,...dislikes,...exceptions,id]);
         list = new Set([...list]);
 
         console.log('list after sets: ',list);
@@ -479,12 +481,12 @@ exports.onLike = functions.firestore
         const queueList = [...list]
             .filter(x => !excludeList.has(x.id))
             .map((x) => {
-                const distanceApart = getDistance(x.coords.latitude,x.coords.longitude,lat,lon)
-                console.log('distanceApart: ',distanceApart);
+                const distanceApart = getDistance(x.coords.latitude,x.coords.longitude,lat,lon);
+                console.log('distanceApart: ',isNaN(distanceApart) ? 0 : distanceApart);
                 console.log('name: ',x.name);
                 return {...x,distanceApart};        
             })
-            .filter((x) => x.distanceApart <= radius)
+            .filter((x) => (isNaN(x.distanceApart) ? 0 : x.distanceApart) <= radius)
             .slice(0,MAX_QUEUE_SIZE);   
         
         console.log('queueList: ',queueList);
@@ -539,7 +541,9 @@ exports.onLike = functions.firestore
 
     console.log('isEmpty: ',isEmpty);
 
-    if(!isEmpty) {
+
+    if(!isEmpty) { // if a queue exists
+
       // Send some more items from the queue
       const queueList = currentList.docs.slice(0,QUEUE_SIZE).map((doc) => doc.data());
       console.log('queueList: ',queueList);
@@ -554,12 +558,18 @@ exports.onLike = functions.firestore
 
       // send queuelist back to the client
       res.send(queueList);
+      
+      // Get new queue ready
+      await generateNewQueue(id,OppositeGender,lat,lon,radius,queueList);
     
     } else {
       // If the queue is empty, generate a new queue
-      const queueList = await generateNewQueue(id,OppositeGender,lat,lon,radius);
+      const queueList = await generateNewQueue(id,OppositeGender,lat,lon,radius,[]);
       console.log('sending queue to client: ',queueList);
       res.send(queueList);
+
+      // Get new queue ready
+      await generateNewQueue(id,OppositeGender,lat,lon,radius,queueList);
     }
     
   });

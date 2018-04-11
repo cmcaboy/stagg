@@ -142,7 +142,7 @@ export const match = (id) => ({
 });
 
 // Will probably move this to the backend and use an HTTP request instead
-export const startNewQueue = (id) => {
+export const startNewQueue = () => {
     // query executed via firebase cloud functions
     //console.log('in startnewQueue: ',id)
     return async (dispatch,getState) => {
@@ -167,11 +167,12 @@ export const startNewQueue = (id) => {
         }
         // ------------------------------------------------------------------------
         
+        const id = getState().authReducer.uid;
         const OppositeGender = (getState().profileReducer.gender==="male")?"female":"male";
         console.log(getState().profileReducer.coords);
         const lat = getState().profileReducer.coords.latitude;
         const lon = getState().profileReducer.coords.longitude;
-        const radius =          getState().settingsReducer.distance;
+        const radius = getState().settingsReducer.distance;
 
         const url = `https://us-central1-stagg-test.cloudfunctions.net/getQueue?id=${id}&lat=${lat}&lon=${lon}&OppositeGender=${OppositeGender}&radius=${radius}`;
 

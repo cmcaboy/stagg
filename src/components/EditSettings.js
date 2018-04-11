@@ -7,8 +7,11 @@ import {
   startChangeAgePreference,
   startChangeDistance
 } from '../actions/settings';
-import {Card} from './common';
+import {Card,Button} from './common';
 import { PRIMARY_COLOR } from '../variables';
+import { db } from '../firebase';
+import { testFemale, testMale } from '../tests/testUser';
+import uuid from 'uuid';
 
 const SLIDER_WIDTH = Dimensions.get('window').width * 0.87;
 
@@ -39,6 +42,18 @@ class EditSettings extends Component {
   notificationChange = () => {
     this.setState((prevState) => ({sendNotifications:!prevState.sendNotifications}))
     startChangeNotification(this.state.sendNotifications);
+  }
+
+  testCases = () => {
+    const res = [...Array(10)].map(() => {
+      const uid = uuid();
+      db.collection(`users`).doc(`${uid}`).set({
+        ...testMale,
+        uid
+      })
+      .then(() => console.log(`User ${uid} added.`))
+      .catch(() => console.log(`User ${uid} could not be added.`))
+    })
   }
 
   render() {
@@ -95,6 +110,11 @@ class EditSettings extends Component {
         value={this.state.sendNotifications}
       />
     </View>
+    </Card>
+    <Card style={{display: 'none'}}>
+      <Button 
+        onPress={() => this.testCases()}
+      >Insert Test cases</Button>
     </Card>
   </View>
   )

@@ -16,7 +16,7 @@ import {
     ImageBackground
 } from 'react-native';
 import {connect} from 'react-redux';
-import {startLike,startDislike,startMatch,startRequeue} from '../actions/matchList';
+import {startLike,startDislike,startMatch,startNewQueue} from '../actions/matchList';
 import {startSetCoords} from '../actions/profile';
 import {matchLoading} from '../actions/auth';
 //import {Card} from 'react-native-elements';
@@ -30,6 +30,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SWIPE_THRESHOLD = (0.25 * SCREEN_WIDTH);
 const SWIPE_OUT_DURATION = 250;
+const MIN_QUEUE_LENGTH = 1;
 
 class Stagg extends Component {
     /*static defaultProps = {
@@ -72,6 +73,14 @@ class Stagg extends Component {
         // If we receive a new list, we should reset the index back to 0.
         if(nextProps.prospectiveList !== this.props.prospectiveList) {
             this.setState({index:0});
+        }
+    }
+
+    componentDidMount() {
+        console.log('queue length: ',(this.state.index + 1 + MIN_QUEUE_LENGTH));
+        console.log('prospective length: ',this.props.prospectiveList.length);
+        if((this.state.index + 1 + MIN_QUEUE_LENGTH) > this.props.prospectiveList.length) {
+            this.props.startNewQueue();
         }
     }
 
@@ -145,6 +154,10 @@ class Stagg extends Component {
         this.state.position.setValue({x:0,y:0});
         // Increment the state by one
         this.setState({ index: this.state.index + 1 });
+
+        if((this.state.index + 1 + MIN_QUEUE_LENGTH) > this.props.prospectiveList.length) {
+            this.props.startNewQueue();
+        }
     } 
     onSwipeRight = (id) => this.props.startLike(id);
     onSwipeLeft  = (id) => this.props.startDislike(id);
@@ -359,7 +372,7 @@ const mapDispatchToProps = (dispatch) => {
         startLike: (id) => dispatch(startLike(id)),
         startDislike: (id) => dispatch(startDislike(id)),
         startMatch: (id) => dispatch(startMatch(id)),
-        startRequeue: (id) => dispatch(startRequeue(id)),
+        startNewQueue: () => dispatch(startNewQueue()),
         startSetCoords: (coords) => dispatch(startSetCoords(coords)),
         matchLoading: (matchLoading) => dispatch(matchLoading(matchLoading))
     }

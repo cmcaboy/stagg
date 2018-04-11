@@ -373,9 +373,10 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
     const m = d * 0.62137;
     return m;
 };
-const generateNewQueue = (id, OppositeGender, lat, lon, radius) => __awaiter(this, void 0, void 0, function* () {
+const generateNewQueue = (id, OppositeGender, lat, lon, radius, exceptionsParam) => __awaiter(this, void 0, void 0, function* () {
     const DEBUG = 0;
     const MAX_QUEUE_SIZE = 50;
+    const exceptions = !!exceptionsParam ? exceptionsParam : [];
     const queryList = yield db.collection(`users`)
         .where("active", "==", 1)
         .where("gender", "==", OppositeGender)
@@ -415,7 +416,7 @@ const generateNewQueue = (id, OppositeGender, lat, lon, radius) => __awaiter(thi
         return docData.dislikedId;
     });
     console.log('dislikes: ', dislikes);
-    const excludeList = new Set([...likes, ...dislikes, id]);
+    const excludeList = new Set([...likes, ...dislikes, ...exceptions, id]);
     list = new Set([...list]);
     console.log('list after sets: ', list);
     console.log('excludeList: ', excludeList);
@@ -423,11 +424,11 @@ const generateNewQueue = (id, OppositeGender, lat, lon, radius) => __awaiter(thi
         .filter(x => !excludeList.has(x.id))
         .map((x) => {
         const distanceApart = getDistance(x.coords.latitude, x.coords.longitude, lat, lon);
-        console.log('distanceApart: ', distanceApart);
+        console.log('distanceApart: ', isNaN(distanceApart) ? 0 : distanceApart);
         console.log('name: ', x.name);
         return Object.assign({}, x, { distanceApart });
     })
-        .filter((x) => x.distanceApart <= radius)
+        .filter((x) => (isNaN(x.distanceApart) ? 0 : x.distanceApart) <= radius)
         .slice(0, MAX_QUEUE_SIZE);
     console.log('queueList: ', queueList);
     // put items onto user's queue subcollection
@@ -468,7 +469,7 @@ exports.getQueue = functions.https.onRequest((req, res) => __awaiter(this, void 
     }
     ;
     console.log('isEmpty: ', isEmpty);
-    if (!isEmpty) {
+    if (!isEmpty) { // if a queue exists
         // Send some more items from the queue
         const queueList = currentList.docs.slice(0, QUEUE_SIZE).map((doc) => doc.data());
         console.log('queueList: ', queueList);
@@ -482,12 +483,16 @@ exports.getQueue = functions.https.onRequest((req, res) => __awaiter(this, void 
         */
         // send queuelist back to the client
         res.send(queueList);
+        // Get new queue ready
+        yield generateNewQueue(id, OppositeGender, lat, lon, radius, queueList);
     }
     else {
         // If the queue is empty, generate a new queue
-        const queueList = yield generateNewQueue(id, OppositeGender, lat, lon, radius);
+        const queueList = yield generateNewQueue(id, OppositeGender, lat, lon, radius, []);
         console.log('sending queue to client: ', queueList);
         res.send(queueList);
+        // Get new queue ready
+        yield generateNewQueue(id, OppositeGender, lat, lon, radius, queueList);
     }
 }));
 //# sourceMappingURL=index.js.map
