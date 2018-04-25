@@ -13,24 +13,26 @@ import {
     LayoutAnimation,
     UIManager,
     ActivityIndicator,
-    ImageBackground
+    ImageBackground,
+    Alert,
+    Button
 } from 'react-native';
 import {connect} from 'react-redux';
 import {startLike,startDislike,startMatch,startNewQueue} from '../actions/matchList';
 import {startSetCoords} from '../actions/profile';
 import {matchLoading} from '../actions/auth';
 //import {Card} from 'react-native-elements';
-import {Card} from './common';
-import {Location,Permissions} from 'expo';
+import {Card,Spinner,MyAppText} from './common';
+import {Location,Permissions,Notifications} from 'expo';
 import {Foundation,Ionicons} from '@expo/vector-icons';
 import StaggCard from './StaggCard';
-import {Spinner} from './common';
+import registerForNotifications from '../services/push_notifications';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SWIPE_THRESHOLD = (0.25 * SCREEN_WIDTH);
-const SWIPE_OUT_DURATION = 250;
-const MIN_QUEUE_LENGTH = 1;
+const SWIPE_OUT_DURATION = 100;
+const MIN_QUEUE_LENGTH = 10;
 
 class Stagg extends Component {
     /*static defaultProps = {
@@ -68,20 +70,40 @@ class Stagg extends Component {
         this.position = position;
         this.state = {panResponder, position,index:0, status: null}
     }
-
+/*
     componentWillReceiveProps(nextProps) {
+        console.log('receiveProps');
         // If we receive a new list, we should reset the index back to 0.
         if(nextProps.prospectiveList !== this.props.prospectiveList) {
+            console.log('receiveProps reset index');
             this.setState({index:0});
         }
+        
     }
-
+*/
     componentDidMount() {
         console.log('queue length: ',(this.state.index + 1 + MIN_QUEUE_LENGTH));
         console.log('prospective length: ',this.props.prospectiveList.length);
-        if((this.state.index + 1 + MIN_QUEUE_LENGTH) > this.props.prospectiveList.length) {
-            this.props.startNewQueue();
+        if(this.props.prospectiveList.length < 1) {
+            this.props.startNewQueue(false);
         }
+
+        // Ask user for notifications permissions
+        registerForNotifications(this.props.id);
+        
+        // Listen for notifications
+        Notifications.addListener((notification) => {
+            console.log('notification: ',notification);
+            const { data: { message }, origin } = notification;
+            if(origin === 'received' && message) {
+
+                Alert.alert(
+                    'New Notification',
+                    message,
+                    [{text: 'ok' }]
+                )
+            } 
+        })
     }
 
     componentWillUpdate() {
@@ -139,10 +161,10 @@ class Stagg extends Component {
         // same as spring, but the animation plays out slightly differently. Timing is more linear while
         // spring is more bouncy.
         Animated.timing(this.state.position, {
-            toValue: { x:direction==='right'?SCREEN_WIDTH+100:-SCREEN_WIDTH-100, y:0},
+            toValue: { x:direction==='right'?SCREEN_WIDTH+150:-SCREEN_WIDTH-150, y:0},
             duration: SWIPE_OUT_DURATION
             // the start function can accept a callback.
-        }).start(() => this.onSwipeComplete(direction));
+        }).start(async () => this.onSwipeComplete(direction));
     }
     onSwipeComplete(direction) {
         // data is the array the comes in through props. It is the list of cards
@@ -152,11 +174,16 @@ class Stagg extends Component {
         direction === 'right' ? this.onSwipeRight(item.id) : this.onSwipeLeft(item.id);
         // Reset the card's position to be in default onscreen position
         this.state.position.setValue({x:0,y:0});
+        
+        console.log('prospectiveList length: ', this.props.prospectiveList.length);
+        console.log('index: ', (this.state.index + 1));
+        
         // Increment the state by one
-        this.setState({ index: this.state.index + 1 });
+        //this.setState({ index: this.state.index + 1 });
 
-        if((this.state.index + 1 + MIN_QUEUE_LENGTH) > this.props.prospectiveList.length) {
-            this.props.startNewQueue();
+        if(this.props.prospectiveList.length === 0) {
+            this.props.startNewQueue(true);
+            //this.setState({index:0});
         }
     } 
     onSwipeRight = (id) => this.props.startLike(id);
@@ -185,14 +212,16 @@ class Stagg extends Component {
         }
     }
 
-    renderCard(prospect) {
+    renderCard = (prospect,cacheImages) => {
         // Instead of rendering a card, I could render an ImageBackground
         //console.log('stagg ancillary: ',prospect.ancillaryPics);
+
         return (
             //<Text>{prospect.name}</Text>
             
             <StaggCard 
                 key={prospect.id}
+                id={prospect.id}
                 pics={[prospect.profilePic,...prospect.ancillaryPics]}
                 //pics={[prospect.profilePic]}
                 name={prospect.name}
@@ -200,6 +229,8 @@ class Stagg extends Component {
                 school={prospect.school}
                 description={prospect.description}
                 distanceApart={prospect.distanceApart}
+                cacheImages={!!cacheImages}
+                navigation={this.props.navigation}
             />
             
         )
@@ -208,24 +239,39 @@ class Stagg extends Component {
     noProspects() {
         return (
             <View style={styles.noProspects}>
-                <Ionicons 
-                    name="md-sad"
-                    size={100}
-                    color="black"
-                />
-                <Text>There is no one new in your area.</Text>
-                <Text>Try again later.</Text>
+                    <Ionicons 
+                        name="md-sad"
+                        size={100}
+                        color="black"
+                    />
+                    <Text>There is no one new in your area.</Text>
+                    <Text>Try again later.</Text>
+
+                    <TouchableOpacity 
+                        onPress={() => this.props.startNewQueue(true)} 
+                        style={styles.noProspectsButton}
+                    >
+                        <MyAppText style={styles.noProspectsText}>
+                            Search Again
+                        </MyAppText>
+                    </TouchableOpacity>
             </View>
         )
     }
 
     renderGranted = () => {
         if (this.props.prospectiveList.length === 0) {
-            return this.noProspects();
+            if(this.props.isMatchLoading) {
+                return <Spinner />
+            } else {
+                return this.noProspects();
+            }
         }
         return (
             <Animated.View style={styles.staggContainer}>
                 {this.props.prospectiveList.map((prospect,i) => {
+                    console.log('i',i);
+                    console.log('state index: ',this.state.index);
                     if(i < this.state.index) { return null }
                     else if (i === this.state.index) {
                         return (
@@ -234,7 +280,7 @@ class Stagg extends Component {
                                 style={[this.getCardStyle(),styles.cardStyle]}
                                 {...this.state.panResponder.panHandlers}
                             >
-                                {this.renderCard(prospect)}
+                                {this.renderCard(prospect,true)}
                             </Animated.View>
                         )
                     } else {
@@ -242,6 +288,7 @@ class Stagg extends Component {
                             <Animated.View
                                 key={prospect.id}
                                 style={[styles.cardStyle]}
+                                //{...this.state.panResponder.panHandlers}
                             >
                                 {this.renderCard(prospect)}
                             </Animated.View>
@@ -337,6 +384,25 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
+    noProspectsButton: {
+        width: SCREEN_WIDTH * 0.7,
+        //height: 20,
+        backgroundColor: '#fff',
+        borderRadius: 5,
+        borderWidth: 1,
+        borderColor: '#007aff',
+        marginLeft: 5,
+        marginRight: 5,
+        marginTop: 10
+    },
+    noProspectsText: {
+        alignSelf: 'center',
+        color: '#007aff',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingTop: 10,
+        paddingBottom: 10
+    },
     prospectText: {
         color: '#fff',
         fontSize: 32,
@@ -372,7 +438,7 @@ const mapDispatchToProps = (dispatch) => {
         startLike: (id) => dispatch(startLike(id)),
         startDislike: (id) => dispatch(startDislike(id)),
         startMatch: (id) => dispatch(startMatch(id)),
-        startNewQueue: () => dispatch(startNewQueue()),
+        startNewQueue: (boo) => dispatch(startNewQueue(boo)),
         startSetCoords: (coords) => dispatch(startSetCoords(coords)),
         matchLoading: (matchLoading) => dispatch(matchLoading(matchLoading))
     }
@@ -385,7 +451,8 @@ const mapStateToProps = (state,ownProps) => {
         likeList: state.matchListReducer.likeList,
         dislikeList: state.matchListReducer.dislikeList,
         matchList: state.matchListReducer.matches,
-        isMatchLoading: state.authReducer.matchLoading
+        isMatchLoading: state.authReducer.matchLoading,
+        id: state.authReducer.uid
     }
 }
 

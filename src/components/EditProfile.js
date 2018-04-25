@@ -115,9 +115,11 @@ class EditProfile extends Component {
               multiline={true}
             />
           </Card>
-          <Card>
-            <Button onPress={this.removeAccount}>Remove Account</Button>
-          </Card>  
+          {/*
+            <Card>
+              <Button onPress={this.removeAccount}>Remove Account</Button>
+            </Card>  
+          */}
           </KeyboardAvoidingView>
         </ScrollView>
     )

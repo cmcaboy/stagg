@@ -4,13 +4,14 @@ import {CirclePicture,Card,MyAppText} from './common';
 import {connect} from 'react-redux';
 import {startLogout} from '../actions/auth';
 import {MaterialCommunityIcons,Ionicons,MaterialIcons} from '@expo/vector-icons';
-import { PRIMARY_COLOR } from '../variables';
+import { PRIMARY_COLOR, PLACEHOLDER_PHOTO } from '../variables';
+
 
 const ICON_OPACITY = 0.75;
 const ICON_SIZE = Dimensions.get('window').height *0.05;
 
 const Settings = (props) => {
-    const {profilePic = 'https://placebear.com/300/200',name,work,school} = props;
+    const {profilePic = PLACEHOLDER_PHOTO,name,work,school} = props;
     // console.log('work: ',work);
     // console.log('school: ',school);
     // console.log('school: ',!!school);

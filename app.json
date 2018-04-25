@@ -1,6 +1,23 @@
 {
   "expo": {
+    "name": "Stagg",
+    "description": "A simple dating app focused in the NYC area.",
+    "slug": "Stagg",
+    "privacy": "public",
     "sdkVersion": "23.0.0",
-    "orientation": "portrait"
+    "version": "1.0",
+    "orientation": "portrait",
+    "primaryColor": "#F56705",
+    "icon": "https://firebasestorage.googleapis.com/v0/b/stagg-test.appspot.com/o/icons%2Fstagg_icon.png?alt=media&token=a521fae8-d25d-43c9-97e9-b2ad5366d85b",
+    "notification": {
+      "color": "#F56705",
+      "icon": "https://firebasestorage.googleapis.com/v0/b/stagg-test.appspot.com/o/icons%2Fstagg_icon_notification.png?alt=media&token=b67b0eed-accd-4325-806f-3c8b7ad35640" 
+    },
+    "ios": {
+      "bundleIdentifier": "org.stagg.exp"
+    },
+    "android": {
+      "package": "org.stagg.exp"
+    }
   }
 }

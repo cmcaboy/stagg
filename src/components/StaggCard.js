@@ -46,17 +46,40 @@ class StaggCard extends Component {
 
   render() {
 
-    const {pics,style,name,description,work,school} = this.props; 
+    const {pics,style,name,description,work,school,id} = this.props; 
     const distanceApart = Math.round(this.props.distanceApart);
+
+    const picHeight = SCREEN_HEIGHT - (CARD_MARGIN*2 + TAB_BAR_HEIGHT +25);
+    const picWidth = SCREEN_WIDTH - CARD_MARGIN*2;
+
     return (
             <View style={{margin:CARD_MARGIN}}>
+    {/*
                 <UserProfilePhotos 
                   pics={pics} 
-                  picHeight={SCREEN_HEIGHT - (CARD_MARGIN*2 + TAB_BAR_HEIGHT +20)} 
+                  picHeight={SCREEN_HEIGHT - (CARD_MARGIN*2 + TAB_BAR_HEIGHT +25)} 
                   picWidth={SCREEN_WIDTH - CARD_MARGIN*2}
                   customPicStyle={styles.customPicStyle} 
                   borderRadius={7}
+                  cacheImages={this.props.cacheImages}
                 >
+    */}
+                <ImageBackground 
+                  key={pics[0]} 
+                  source={{uri:pics[0]}} 
+                  style={[
+                    {height:picHeight},
+                    {width:picWidth},
+                    styles.customPicStyle,
+                    {borderRadius:7}
+                    ]}
+                  imageStyle={{borderRadius: 7}}
+                >
+                <TouchableWithoutFeedback 
+                  onPress={() => this.props.navigation.navigate('UserProfile',{id:id,name:name})}
+                >
+                    <View style={[{width:picWidth},{height:picHeight}]}></View>
+                </TouchableWithoutFeedback>   
                   <TouchableWithoutFeedback 
                     onPress={() => this.toggleCollaspe()}
                     
@@ -85,13 +108,12 @@ class StaggCard extends Component {
                     </View>
                       <View style={{display: this.state.isCollasped?'none':'flex'}}>
                         <View style={styles.horizontalLine}/>
-                       
-                        <MyAppText>{description}</MyAppText> 
+                          <MyAppText>{description}</MyAppText> 
                       </View>
-                  </View>
+                    </View>
                   </TouchableWithoutFeedback>
-                 
-              </UserProfilePhotos>  
+                 </ImageBackground>
+             {/* </UserProfilePhotos> */} 
             
           </View>
         )

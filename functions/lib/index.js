@@ -14,6 +14,7 @@ const Cors = require("cors");
 const express = require("express");
 //const fileUpload = require(path.resolve(__dirname,"./fileUpload.js"));
 const fileUpload = require('../src/fileUpload');
+const Expo = require('expo-server-sdk');
 admin.initializeApp(functions.config().firebase);
 const db = admin.firestore();
 const uploadImageToStorage = file => {
@@ -199,7 +200,6 @@ exports.getDislikes = functions.https.onRequest((req, res) => {
         .catch((error) => console.log("Error writing document: ", error));
 });
 exports.oldNewQueue = functions.https.onRequest((req, res) => {
-    //const id = req.query.id;
     return db.collection(`users`).get()
         .then((queueList) => {
         // Firestore document id's can be obtained with the .id property.
@@ -306,6 +306,40 @@ exports.onMatchShowHide = functions.firestore
             .update({ active: 1 });
     }
 });
+const sendNotification = (id, messageBody, title) => __awaiter(this, void 0, void 0, function* () {
+    const doc = yield db.collection(`users`).doc(`${id}`).get();
+    if (!doc.exists) {
+        console.log('User does not exist: ', id);
+        return;
+    }
+    const user = doc.data();
+    // If user has elected to receive notifications and we have a token on file
+    if (!!user.sendNotifications && !!user.token) {
+        // Send a push notification
+        const expo = new Expo();
+        const message = [{
+                to: user.token,
+                sound: 'default',
+                body: messageBody,
+                data: { message: `${title} - ${messageBody}` }
+            }];
+        console.log('message: ', message);
+        const chunks = expo.chunkPushNotifications(message);
+        // Send the chunks to the Expo push notification service. There are
+        // different strategies you could use. A simple one is to send one chunk at a
+        // time, which nicely spreads the load out over time:
+        for (const chunk of chunks) {
+            try {
+                console.log('chunk: ', chunk);
+                const receipts = yield expo.sendPushNotificationsAsync(chunk);
+                console.log('receives: ', receipts);
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }
+    }
+});
 // Helper function to create a new match
 const createMatch = (a, b) => {
     // create a match between userId's a and b
@@ -336,6 +370,12 @@ const createMatch = (a, b) => {
     })
         .catch((error) => console.log('error: ', error))
         .catch((error) => console.log('error: ', error));
+    sendNotification(a, 'You have a new match. Congrats!', 'New Match!')
+        .then(() => console.log('Notification sent to ', a))
+        .catch(e => console.log(`Error sending notification to ${a}: `, e));
+    sendNotification(b, 'You have a new match. Congrats!', 'New Match!')
+        .then(() => console.log('Notification sent to ', b))
+        .catch(e => console.log(`Error sending notification to ${b}: `, e));
 };
 exports.onLike = functions.firestore
     .document(`users/{userId}/likes/{likeId}`)
@@ -442,7 +482,7 @@ const generateNewQueue = (id, OppositeGender, lat, lon, radius, exceptionsParam)
 });
 exports.getQueue = functions.https.onRequest((req, res) => __awaiter(this, void 0, void 0, function* () {
     const DEBUG = 1;
-    const QUEUE_SIZE = 5;
+    const QUEUE_SIZE = 10;
     console.log('getQueue');
     console.log('req: ', req.query);
     // Check to see if queue exists
@@ -490,7 +530,7 @@ exports.getQueue = functions.https.onRequest((req, res) => __awaiter(this, void 
         // If the queue is empty, generate a new queue
         const queueList = yield generateNewQueue(id, OppositeGender, lat, lon, radius, []);
         console.log('sending queue to client: ', queueList);
-        res.send(queueList);
+        res.send(queueList.slice(0, QUEUE_SIZE));
         // Get new queue ready
         yield generateNewQueue(id, OppositeGender, lat, lon, radius, queueList);
     }

@@ -23,7 +23,8 @@ class Messenger extends Component {
         headerTitle: (
             <View style={styles.headerViewStyle}>
                 {console.log('navigation params: ',navigation.state.params)}
-                <TouchableOpacity onPress={() => navigation.navigate('UserProfile',{id:navigation.state.params.otherId})}>
+                <TouchableOpacity onPress={() => navigation.navigate('UserProfile',
+                    {id:navigation.state.params.otherId,name:navigation.state.params.name})}>
                     <CirclePicture imageURL={navigation.state.params.pic} picSize="mini" />
                 </TouchableOpacity>
                 <MyAppText style={styles.textHeader}>{navigation.state.params.name}</MyAppText>
@@ -102,7 +103,7 @@ class Messenger extends Component {
                 onSend={(message) => this.onSend(message)}
                 user={{_id:this.props.id}}
                 showUserAvatar={false}
-                onPressAvatar={(user) => this.props.navigation.navigate('UserProfile',{id:user._id})}
+                onPressAvatar={(user) => this.props.navigation.navigate('UserProfile',{id:user._id,name:user.name})}
             />
             {Platform.OS === 'android' ? <KeyboardSpacer /> : null }
         </View>

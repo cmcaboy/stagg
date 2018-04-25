@@ -1,5 +1,7 @@
+import {PLACEHOLDER_PHOTO} from '../variables';
+
 const profileReducerDefaultState = {
-    profilePic: 'https://placebear.com/300/200',     // url to profile picture
+    profilePic: PLACEHOLDER_PHOTO,     // url to profile picture
     ancillaryPics: [],  // array of up to 6 picture urls 
     name: 'Anonymous',  // Name of user
     Age: 25,            // Age of user

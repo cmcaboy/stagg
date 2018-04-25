@@ -44,6 +44,7 @@ class CondInput extends Component {
                 onChangeText={(value) => this.setState({value})}
                 value={`${value}`}
                 multiline={multiline}
+                onEndEditing={() => this.confirmUpdate()}
               />
               <ActionIcon 
                 onPress={() => this.confirmUpdate()}

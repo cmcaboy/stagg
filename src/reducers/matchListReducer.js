@@ -6,7 +6,7 @@ const matchListReducerDefaultState = {
 };
 
 const matchListReducer = (state = matchListReducerDefaultState,action = {}) => {
-    console.log(action);
+    console.log(action.type);
     switch(action.type) {
         case 'LOAD_LISTS':
             return {
@@ -32,7 +32,7 @@ const matchListReducer = (state = matchListReducerDefaultState,action = {}) => {
             // add entry to like list
             return {
                 ...state,
-                queue: state.queue.filter(element => element.id !== action.like.id),
+                //queue: state.queue.filter(element => element.id !== action.like.id),
                 likes: [...state.likes, action.like.id]
             };
         case 'DISLIKE':
@@ -40,8 +40,15 @@ const matchListReducer = (state = matchListReducerDefaultState,action = {}) => {
             // add entry to dislike list
             return {
                 ...state,
-                queue: state.queue.filter(element => element.id !== action.dislike.id),
+                //queue: state.queue.filter(element => element.id !== action.dislike.id),
                 dislikes: [...state.dislikes, action.dislike.id]
+            };
+        case 'DEQUEUE':
+            // remove entry from queue list
+            // add entry to dislike list
+            return {
+                ...state,
+                queue: state.queue.filter(element => element.id !== action.dequeue.id),
             };
         case 'MATCH':
             // remove entry from queue list

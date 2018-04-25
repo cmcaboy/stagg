@@ -6,6 +6,7 @@ const Cors = require("cors");
 const express = require("express");
 //const fileUpload = require(path.resolve(__dirname,"./fileUpload.js"));
 const fileUpload = require('../src/fileUpload');
+const Expo = require('expo-server-sdk');
 
 admin.initializeApp(functions.config().firebase);
 const db = admin.firestore(); 
@@ -98,44 +99,44 @@ exports.getMatches = functions.https.onRequest((req,res) => {
   // The matches come back with their unique id, their name, and their profile picture
   console.log('in getMatches');
   db.collection(`users`).where("active","==",1).get()
-            .then((data) => {
-                const userList = [];
-                data.docs.forEach((doc) => {
-                    const userData = doc.data();
-                    userList[doc.id] = {
-                      name: userData.name,
-                      profilePic: userData.profilePic,
-                      description: userData.description,
-                      ancillaryPics: userData.ancillaryPics,
-                      school: userData.school,
-                      work: userData.work
-                    }
-                });
-                console.log('userList: ',userList);
-                return db.collection(`users/${id}/matches`).where("active","==",1).get()
-                  .then((matchData) => {
-                    const matchList = matchData.docs.map((matchDatum) => {
-                      const match = matchDatum.data();
-                      console.log('match: ',matchDatum.id);
-                        return {
-                          id:matchDatum.id,
-                          name: userList[matchDatum.id].name,
-                          profilePic: userList[matchDatum.id].profilePic,
-                          matchId: match.matchId,
-                          lastMessage: match.lastMessage,
-                          lastUser: match.lastUser,
-                          description: userList[matchDatum.id].description,
-                          ancillaryPics: userList[matchDatum.id].ancillaryPics,
-                          school: userList[matchDatum.id].school,
-                          work: userList[matchDatum.id].work
-                        }
-                    })
-                    console.log('matchList: ',matchList);
-                    return res.send(matchList);
-                  })
-                  .catch((error) => console.log("Error writing document: ",error));
+    .then((data) => {
+        const userList = [];
+        data.docs.forEach((doc) => {
+            const userData = doc.data();
+            userList[doc.id] = {
+              name: userData.name,
+              profilePic: userData.profilePic,
+              description: userData.description,
+              ancillaryPics: userData.ancillaryPics,
+              school: userData.school,
+              work: userData.work
+            }
+        });
+        console.log('userList: ',userList);
+        return db.collection(`users/${id}/matches`).where("active","==",1).get()
+          .then((matchData) => {
+            const matchList = matchData.docs.map((matchDatum) => {
+              const match = matchDatum.data();
+              console.log('match: ',matchDatum.id);
+                return {
+                  id:matchDatum.id,
+                  name: userList[matchDatum.id].name,
+                  profilePic: userList[matchDatum.id].profilePic,
+                  matchId: match.matchId,
+                  lastMessage: match.lastMessage,
+                  lastUser: match.lastUser,
+                  description: userList[matchDatum.id].description,
+                  ancillaryPics: userList[matchDatum.id].ancillaryPics,
+                  school: userList[matchDatum.id].school,
+                  work: userList[matchDatum.id].work
+                }
             })
-            .catch((error) => console.log("Error writing document: ",error));
+            console.log('matchList: ',matchList);
+            return res.send(matchList);
+          })
+          .catch((error) => console.log("Error writing document: ",error));
+    })
+    .catch((error) => console.log("Error writing document: ",error));
 });
 
 exports.getLikes = functions.https.onRequest((req,res) => {
@@ -146,33 +147,33 @@ exports.getLikes = functions.https.onRequest((req,res) => {
   // The matches come back with their unique id, their name, and their profile picture
   console.log('Start getLikes');
   db.collection(`users`).get()
-            .then((data) => {
-                const userList = [];
-                data.docs.forEach((doc) => {
-                    const userData = doc.data();
-                    userList[doc.id] = {
-                      name: userData.name,
-                      profilePic: userData.profilePic
-                    }
-                });
-                console.log('userList: ',userList);
-                return db.collection(`users/${id}/likes`).get()
-                .then((likeData) => {
-                  const likeList = likeData.docs.map((likeDatum) => {
-                    const like = likeDatum.data();
-                    console.log('like: ',like);
-                    console.log('user: ',userList[like.likedId]);
-                    return {
-                      id:like.likedId,
-                      name: userList[like.likedId].name,
-                      profilePic: userList[like.likedId].profilePic
-                    }
-                  })
-                  return res.send(likeList);
-                  })
-                  .catch((error) => console.log("Error writing document: ",error));
-            })
-            .catch((error) => console.log("Error writing document: ",error));
+    .then((data) => {
+        const userList = [];
+        data.docs.forEach((doc) => {
+            const userData = doc.data();
+            userList[doc.id] = {
+              name: userData.name,
+              profilePic: userData.profilePic
+            }
+        });
+        console.log('userList: ',userList);
+        return db.collection(`users/${id}/likes`).get()
+        .then((likeData) => {
+          const likeList = likeData.docs.map((likeDatum) => {
+            const like = likeDatum.data();
+            console.log('like: ',like);
+            console.log('user: ',userList[like.likedId]);
+            return {
+              id:like.likedId,
+              name: userList[like.likedId].name,
+              profilePic: userList[like.likedId].profilePic
+            }
+          })
+          return res.send(likeList);
+          })
+          .catch((error) => console.log("Error writing document: ",error));
+    })
+    .catch((error) => console.log("Error writing document: ",error));
 });
 
 exports.getDislikes = functions.https.onRequest((req,res) => {
@@ -183,36 +184,33 @@ exports.getDislikes = functions.https.onRequest((req,res) => {
   // The matches come back with their unique id, their name, and their profile picture
   
   db.collection(`users`).get()
-            .then((data) => {
-                const userList = [];
-                data.docs.forEach((doc) => {
-                    const userData = doc.data();
-                    userList[doc.id] = {
-                      name: userData.name,
-                      profilePic: userData.profilePic
-                    }
-                });
-                return db.collection(`users/${id}/dislikes`).get()
-                  .then((dislikeData) => {
-                    const dislikeList = dislikeData.docs.map((dislikeDatum) => {
-                      const dislike = dislikeDatum.data();
-                        return {
-                          id:dislike.dislikedId,
-                          name: userList[dislike.dislikedId].name,
-                          profilePic: userList[dislike.dislikedId].profilePic
-                        }
-                    })
-                    return res.send(dislikeList);
-                  })
-                  .catch((error) => console.log("Error writing document: ",error));
+    .then((data) => {
+        const userList = [];
+        data.docs.forEach((doc) => {
+            const userData = doc.data();
+            userList[doc.id] = {
+              name: userData.name,
+              profilePic: userData.profilePic
+            }
+        });
+        return db.collection(`users/${id}/dislikes`).get()
+          .then((dislikeData) => {
+            const dislikeList = dislikeData.docs.map((dislikeDatum) => {
+              const dislike = dislikeDatum.data();
+                return {
+                  id:dislike.dislikedId,
+                  name: userList[dislike.dislikedId].name,
+                  profilePic: userList[dislike.dislikedId].profilePic
+                }
             })
-            .catch((error) => console.log("Error writing document: ",error));
+            return res.send(dislikeList);
+          })
+          .catch((error) => console.log("Error writing document: ",error));
+    })
+    .catch((error) => console.log("Error writing document: ",error));
 });
 
 exports.oldNewQueue = functions.https.onRequest((req, res) => {
- 
-  //const id = req.query.id;
-
   return db.collection(`users`).get()
   .then((queueList) => {
       // Firestore document id's can be obtained with the .id property.
@@ -333,6 +331,50 @@ exports.putLastName = functions.https.onRequest((req, res) => {
       }
   });
 
+  const sendNotification = async (id, messageBody, title) => {
+    const doc = await db.collection(`users`).doc(`${id}`).get();
+  
+    if(!doc.exists) {
+      console.log('User does not exist: ',id);
+      return;
+    }
+  
+    const user = doc.data();
+  
+    // If user has elected to receive notifications and we have a token on file
+    if(!!user.sendNotifications && !!user.token) {
+      // Send a push notification
+      const expo = new Expo();
+  
+      const message = [{
+        to: user.token,
+        sound: 'default',
+        body: messageBody,
+        data: { message: `${title} - ${messageBody}`}
+      }]
+  
+
+      console.log('message: ',message)
+      const chunks = expo.chunkPushNotifications(message);
+  
+      
+      // Send the chunks to the Expo push notification service. There are
+      // different strategies you could use. A simple one is to send one chunk at a
+      // time, which nicely spreads the load out over time:
+      for (const chunk of chunks) {
+        try {
+          console.log('chunk: ',chunk);
+          const receipts = await expo.sendPushNotificationsAsync(chunk);
+          console.log('receives: ',receipts);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      
+  
+    }
+  }
+
 // Helper function to create a new match
 const createMatch = (a,b) => {
   // create a match between userId's a and b
@@ -369,6 +411,13 @@ const createMatch = (a,b) => {
     .catch((error) => console.log('error: ',error))
   
   .catch((error) => console.log('error: ',error))
+
+  sendNotification(a,'You have a new match. Congrats!','New Match!')
+    .then(() => console.log('Notification sent to ',a))
+    .catch(e => console.log(`Error sending notification to ${a}: `,e));
+  sendNotification(b,'You have a new match. Congrats!','New Match!')
+    .then(() => console.log('Notification sent to ',b))
+    .catch(e => console.log(`Error sending notification to ${b}: `,e));
 }
 
 exports.onLike = functions.firestore
@@ -505,14 +554,13 @@ exports.onLike = functions.firestore
   exports.getQueue = functions.https.onRequest(async (req, res) => {
 
     const DEBUG = 1;
-    const QUEUE_SIZE = 5;
+    const QUEUE_SIZE = 10;
 
     console.log('getQueue');
 
     console.log('req: ',req.query);
 
     // Check to see if queue exists
-
     
     const id = req.query.id;
     const OppositeGender = req.query.OppositeGender;
@@ -541,7 +589,6 @@ exports.onLike = functions.firestore
 
     console.log('isEmpty: ',isEmpty);
 
-
     if(!isEmpty) { // if a queue exists
 
       // Send some more items from the queue
@@ -566,7 +613,7 @@ exports.onLike = functions.firestore
       // If the queue is empty, generate a new queue
       const queueList = await generateNewQueue(id,OppositeGender,lat,lon,radius,[]);
       console.log('sending queue to client: ',queueList);
-      res.send(queueList);
+      res.send(queueList.slice(0,QUEUE_SIZE));
 
       // Get new queue ready
       await generateNewQueue(id,OppositeGender,lat,lon,radius,queueList);
@@ -574,5 +621,5 @@ exports.onLike = functions.firestore
     
   });
 
-  
+
 

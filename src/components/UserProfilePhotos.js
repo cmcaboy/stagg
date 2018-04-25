@@ -7,7 +7,11 @@ import {
   ScrollView, 
   Dimensions, 
   ImageBackground,
-  TouchableWithoutFeedback } from 'react-native';
+  TouchableWithoutFeedback,
+  Platform,
+  Animated,
+  PanResponder
+} from 'react-native';
 import {CacheManager} from 'react-native-expo-image-cache';
 import {FontAwesome} from '@expo/vector-icons';
 import {PHOTO_ADD_URL} from '../variables';
@@ -17,16 +21,36 @@ import {PHOTO_ADD_URL} from '../variables';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SWIPE_THRESHOLD = (0.05 * SCREEN_WIDTH)
 
 class UserProfilePhotos extends Component {
   constructor(props){
     super(props);
     
-    this.state = {
-      loaded: false,
-      currentImage: 0,
-      pics: this.props.pics.filter(pic => pic !== PHOTO_ADD_URL)
-    }
+    
+
+    const panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (event,gesture) => {},
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+          //return true if user is swiping, return false if it's a single click
+          //console.log('gestureState: ',{...gestureState});
+          return !(Math.abs(gestureState.dx) <= 0.5 && Math.abs(gestureState.dy) <= 0.5) 
+      },
+      onPanResponderRelease: (event,gesture) => {
+        if(gesture.dx > SWIPE_THRESHOLD) {
+          this.clickLeftSide();
+        } else if (gesture.dx < -SWIPE_THRESHOLD) {
+          this.clickRightSide();
+        } 
+      }
+  })
+  this.state = {
+    loaded: false,
+    currentImage: 0,
+    pics: this.props.pics.filter(pic => pic !== PHOTO_ADD_URL),
+    panResponder
+  }
 
   }
 
@@ -42,27 +66,47 @@ class UserProfilePhotos extends Component {
     }
   }
 
-  componentWillMount = () => {
-    this.state.pics.map(async (pic,i) => {
-      await CacheManager.cache(pic, newURI => {
-        this.setState((prevState) => ({
-          pics: prevState.pics.map((picP,iP) => (i===iP) ? newURI : picP) 
-        }))
-      })
-    });
+  cacheImages = () => {
+      this.state.pics.map(async (pic,i) => {
+        try {
+          const newURI = await CacheManager.get(pic).getPath();
+          !!newURI && this.setState((prevState) => ({
+            pics: prevState.pics.map((picP,iP) => (i===iP) ? newURI : picP) 
+          }));
+        } catch(e) {
+          console.log('error downloading images: ',e);
+        }
+      });
+  }
+
+  componentDidMount = () => {
+    if (this.props.cacheImages) {
+      this.cacheImages();
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    /*
+    if(nextProps.cacheImages) {
+      this.cacheImages();
+    }
+    */
   }
 
   componentWillUnmount = async () => {
+    //Platform.OS === 'ioss' && await CacheManager.clearCache();
     await CacheManager.clearCache();
   }
 
   render() {
     const {userPics,userPhoto,touchablePics,leftClicker,rightClicker,picIndicator} = styles;
     const {picHeight = SCREEN_WIDTH,picWidth = SCREEN_WIDTH,customPicStyle,borderRadius} = this.props;
+    //console.log('pics: ',this.state.pics);
+    //console.log('current image: ',this.state.currentImage);
+    //console.log('pic: ',this.state.pics[this.state.currentImage]);
 
     return (        
-        <View style={userPics}>
-        
+        <Animated.View style={userPics} {...this.state.panResponder.panHandlers}>
           {this.state.pics.map((pic,i) => (
               <ImageBackground 
                 key={i} 
@@ -99,7 +143,7 @@ class UserProfilePhotos extends Component {
                 </ImageBackground>
               ))}
               {this.props.children}
-        </View>
+        </Animated.View>
     )
   }
 
@@ -107,7 +151,7 @@ class UserProfilePhotos extends Component {
 
 const styles = StyleSheet.create({
   userPics: {
-    flex:4
+    //flex:2
   },
   userPhoto: {
     width: SCREEN_WIDTH,
@@ -134,7 +178,8 @@ const styles = StyleSheet.create({
   picIndicator: {
     paddingVertical: 3,
     flexDirection: 'row',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    paddingTop: 3
   }
 })
 

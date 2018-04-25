@@ -96,14 +96,19 @@ export const matchList = (matchList) => ({
 export const startLike = (likedId) => {
     return (dispatch,getState) => {
         const id = getState().authReducer.uid;
+
+        dispatch(like(likedId));
+        dispatch(deQueue(likedId))
+
         db.collection(`users/${id}/likes`).add({likedId})
-            .then(() => dispatch(like(likedId)))
+            .then(() => {})
             .catch((error) => console.log("Error writing document: ",error));
-        }
         db.collection(`users/${id}/queue`).doc(`${likedId}`).delete()
-            .then(() => console.log('removed queue id: ',likedId))
+            .then(() => {})
             .catch((e) => console.log('could not remove likedId: ',likedId))
+        }
 }
+
 export const like = (id) => ({
         type: 'LIKE',
         like: {
@@ -117,6 +122,9 @@ export const startDislike = (dislikedId) => {
         db.collection(`users/${id}/dislikes`).add({dislikedId})
             .then(() => dispatch(dislike(dislikedId)))
             .catch((error) => console.log("Error writing document: ",error));
+        db.collection(`users/${id}/queue`).doc(`${dislikedId}`).delete()
+            .then(() => dispatch(deQueue(dislikedId)))
+            .catch((error) => console.log("Error writing document: ",error));
     }
 }
 export const dislike = (id) => ({
@@ -125,6 +133,13 @@ export const dislike = (id) => ({
             id
         }
 });
+
+export const deQueue = (id) => ({
+    type:'DEQUEUE',
+    dequeue: {
+        id
+    }
+})
 
 export const startMatch = (matchId) => {
     return (dispatch,getState) => {
@@ -142,7 +157,7 @@ export const match = (id) => ({
 });
 
 // Will probably move this to the backend and use an HTTP request instead
-export const startNewQueue = () => {
+export const startNewQueue = (showLoad) => {
     // query executed via firebase cloud functions
     //console.log('in startnewQueue: ',id)
     return async (dispatch,getState) => {
@@ -155,7 +170,10 @@ export const startNewQueue = () => {
         }
         */
 
-        dispatch(matchLoading(true))
+        if(showLoad) {
+            dispatch(matchLoading(true))
+        }
+         
 
         // Workaround to avoid nasty race condition
         // ------------------------------------------------------------------------

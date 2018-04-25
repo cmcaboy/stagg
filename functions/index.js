@@ -97,44 +97,44 @@ exports.getMatches = functions.https.onRequest((req,res) => {
   // The matches come back with their unique id, their name, and their profile picture
   console.log('in getMatches');
   db.collection(`users`).where("active","==",1).get()
-            .then((data) => {
-                let userList = [];
-                data.docs.forEach((doc) => {
-                    const userData = doc.data();
-                    userList[doc.id] = {
-                      name: userData.name,
-                      profilePic: userData.profilePic,
-                      description: userData.description,
-                      ancillaryPics: userData.ancillaryPics,
-                      school: userData.school,
-                      work: userData.work
-                    }
-                });
-                console.log('userList: ',userList);
-                return db.collection(`users/${id}/matches`).where("active","==",1).get()
-                  .then((matchData) => {
-                    const matchList = matchData.docs.map((matchData) => {
-                      const match = matchData.data();
-                      console.log('match: ',matchData.id);
-                        return {
-                          id:matchData.id,
-                          name: userList[matchData.id].name,
-                          profilePic: userList[matchData.id].profilePic,
-                          matchId: match.matchId,
-                          lastMessage: match.lastMessage,
-                          lastUser: match.lastUser,
-                          description: userList[matchData.id].description,
-                          ancillaryPics: userList[matchData.id].ancillaryPics,
-                          school: userList[matchData.id].school,
-                          work: userList[matchData.id].work
-                        }
-                    })
-                    console.log('matchList: ',matchList);
-                    return res.send(matchList);
-                  })
-                  .catch((error) => console.log("Error writing document: ",error));
+    .then((data) => {
+        let userList = [];
+        data.docs.forEach((doc) => {
+            const userData = doc.data();
+            userList[doc.id] = {
+              name: userData.name,
+              profilePic: userData.profilePic,
+              description: userData.description,
+              ancillaryPics: userData.ancillaryPics,
+              school: userData.school,
+              work: userData.work
+            }
+        });
+        console.log('userList: ',userList);
+        return db.collection(`users/${id}/matches`).where("active","==",1).get()
+          .then((matchData) => {
+            const matchList = matchData.docs.map((matchData) => {
+              const match = matchData.data();
+              console.log('match: ',matchData.id);
+                return {
+                  id:matchData.id,
+                  name: userList[matchData.id].name,
+                  profilePic: userList[matchData.id].profilePic,
+                  matchId: match.matchId,
+                  lastMessage: match.lastMessage,
+                  lastUser: match.lastUser,
+                  description: userList[matchData.id].description,
+                  ancillaryPics: userList[matchData.id].ancillaryPics,
+                  school: userList[matchData.id].school,
+                  work: userList[matchData.id].work
+                }
             })
-            .catch((error) => console.log("Error writing document: ",error));
+            console.log('matchList: ',matchList);
+            return res.send(matchList);
+          })
+          .catch((error) => console.log("Error writing document: ",error));
+    })
+    .catch((error) => console.log("Error writing document: ",error));
 });
 
 exports.getLikes = functions.https.onRequest((req,res) => {
@@ -145,33 +145,33 @@ exports.getLikes = functions.https.onRequest((req,res) => {
   // The matches come back with their unique id, their name, and their profile picture
   console.log('Start getLikes');
   db.collection(`users`).get()
-            .then((data) => {
-                let userList = [];
-                data.docs.forEach((doc) => {
-                    const userData = doc.data();
-                    userList[doc.id] = {
-                      name: userData.name,
-                      profilePic: userData.profilePic
-                    }
-                });
-                console.log('userList: ',userList);
-                return db.collection(`users/${id}/likes`).get()
-                .then((likeData) => {
-                  const likeList = likeData.docs.map((likeData) => {
-                    const like = likeData.data();
-                    console.log('like: ',like);
-                    console.log('user: ',userList[like.likedId]);
-                    return {
-                      id:like.likedId,
-                      name: userList[like.likedId].name,
-                      profilePic: userList[like.likedId].profilePic
-                    }
-                  })
-                  return res.send(likeList);
-                  })
-                  .catch((error) => console.log("Error writing document: ",error));
-            })
-            .catch((error) => console.log("Error writing document: ",error));
+    .then((data) => {
+        let userList = [];
+        data.docs.forEach((doc) => {
+            const userData = doc.data();
+            userList[doc.id] = {
+              name: userData.name,
+              profilePic: userData.profilePic
+            }
+        });
+        console.log('userList: ',userList);
+        return db.collection(`users/${id}/likes`).get()
+        .then((likeData) => {
+          const likeList = likeData.docs.map((likeData) => {
+            const like = likeData.data();
+            console.log('like: ',like);
+            console.log('user: ',userList[like.likedId]);
+            return {
+              id:like.likedId,
+              name: userList[like.likedId].name,
+              profilePic: userList[like.likedId].profilePic
+            }
+          })
+          return res.send(likeList);
+          })
+          .catch((error) => console.log("Error writing document: ",error));
+    })
+    .catch((error) => console.log("Error writing document: ",error));
 });
 
 exports.getDislikes = functions.https.onRequest((req,res) => {
@@ -182,30 +182,30 @@ exports.getDislikes = functions.https.onRequest((req,res) => {
   // The matches come back with their unique id, their name, and their profile picture
   
   db.collection(`users`).get()
-            .then((data) => {
-                let userList = [];
-                data.docs.forEach((doc) => {
-                    const userData = doc.data();
-                    userList[doc.id] = {
-                      name: userData.name,
-                      profilePic: userData.profilePic
-                    }
-                });
-                return db.collection(`users/${id}/dislikes`).get()
-                  .then((dislikeData) => {
-                    const dislikeList = dislikeData.docs.map((dislikeData) => {
-                      const dislike = dislikeData.data();
-                        return {
-                          id:dislike.dislikedId,
-                          name: userList[dislike.dislikedId].name,
-                          profilePic: userList[dislike.dislikedId].profilePic
-                        }
-                    })
-                    return res.send(dislikeList);
-                  })
-                  .catch((error) => console.log("Error writing document: ",error));
+    .then((data) => {
+        let userList = [];
+        data.docs.forEach((doc) => {
+            const userData = doc.data();
+            userList[doc.id] = {
+              name: userData.name,
+              profilePic: userData.profilePic
+            }
+        });
+        return db.collection(`users/${id}/dislikes`).get()
+          .then((dislikeData) => {
+            const dislikeList = dislikeData.docs.map((dislikeData) => {
+              const dislike = dislikeData.data();
+                return {
+                  id:dislike.dislikedId,
+                  name: userList[dislike.dislikedId].name,
+                  profilePic: userList[dislike.dislikedId].profilePic
+                }
             })
-            .catch((error) => console.log("Error writing document: ",error));
+            return res.send(dislikeList);
+          })
+          .catch((error) => console.log("Error writing document: ",error));
+    })
+    .catch((error) => console.log("Error writing document: ",error));
 });
 
 exports.oldNewQueue = functions.https.onRequest((req, res) => {

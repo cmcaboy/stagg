@@ -1,9 +1,10 @@
 import React from 'react';
 import { View,Image,StyleSheet, Dimensions } from 'react-native';
+import {PLACEHOLDER_PHOTO} from '../../variables';
 
 
 // picSize can be 'large', 'small', or 'mini'
-const CirclePicture = ({imageURL = 'https://placebear.com/300/200',picSize = 'large', auto = false}) => {
+const CirclePicture = ({imageURL = PLACEHOLDER_PHOTO,picSize = 'large', auto = false}) => {
     // pic
     let HEIGHT = 0;
     let BORDER_RADIUS = 0;
