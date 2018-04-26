@@ -1,6 +1,7 @@
 import firebase from '../firebase';
 import {db} from '../firebase';
 import {GOOGLE_MAPS_API_KEY} from '../variables';
+import {FUNCTION_PATH} from '../variables/functions';
 import {matchLoading} from '../actions/auth';
 
 export const startLoadLists = (uid) => {
@@ -8,17 +9,17 @@ export const startLoadLists = (uid) => {
 
         console.log('load list: ',uid);
 
-        fetch(`https://us-central1-stagg-test.cloudfunctions.net/getLikes?uid=${uid}`)
+        fetch(`${FUNCTION_PATH}/getLikes?uid=${uid}`)
             .then((data) => data.json())
             .then((data) => dispatch(likeList(data)))
             .catch((error) => console.log("Error fetching Likes: ",error))
 
-        fetch(`https://us-central1-stagg-test.cloudfunctions.net/getDislikes?uid=${uid}`)
+        fetch(`${FUNCTION_PATH}/getDislikes?uid=${uid}`)
             .then((data) => data.json())
             .then((data) => dispatch(dislikeList(data)))
             .catch((error) => console.log("Error fetching Dislikes: ",error))
         
-        fetch(`https://us-central1-stagg-test.cloudfunctions.net/getMatches?uid=${uid}`)
+        fetch(`${FUNCTION_PATH}/getMatches?uid=${uid}`)
             .then((matchListData) => matchListData.json())
             .then((matchListData) => dispatch(matchList(matchListData)))
             .catch((error) => console.log("Error fetching Matches: ",error))
@@ -49,7 +50,7 @@ export const startUpdateLastMessage = (matchId,message) => {
         // I am not putting the dispatch function within the fetch callback because I
         // don't want to delay the state update. This piece of info is not critial
         // to keep synced up so I can optimize performance in this setting.
-        fetch(`https://us-central1-stagg-test.cloudfunctions.net/putLastMessage?matchId=${matchId}&message=${message}`)
+        fetch(`${FUNCTION_PATH}/putLastMessage?matchId=${matchId}&message=${message}`)
             .then((response) => response.json())
             .then((response) => console.log('response from updateLastMessage: ',response))
             .catch((error) => console.log("Error from updateLastMessage: ",error))
@@ -59,7 +60,7 @@ export const startUpdateLastMessage = (matchId,message) => {
 
 export const startUpdateLastName = (matchId,name) => {
     return (dispatch) => {
-        fetch(`https://us-central1-stagg-test.cloudfunctions.net/putLastName?matchId=${matchId}&name=${name}`)
+        fetch(`${FUNCTION_PATH}/putLastName?matchId=${matchId}&name=${name}`)
             .then((response) => response.json())
             .then((response) => console.log('response from updateLastName: ',response))
             .catch((error) => console.log("Error from updateLastName: ",error))
@@ -162,7 +163,7 @@ export const startNewQueue = (showLoad) => {
     //console.log('in startnewQueue: ',id)
     return async (dispatch,getState) => {
         /*
-        const url = `https://us-central1-stagg-test.cloudfunctions.net/newQueue?id=${id}`
+        const url = `${FUNCTION_PATH}/newQueue?id=${id}`
         fetch(url)
             .then((queryList) => queryList.json())
             .then((queryList) => dispatch(newqueue(queryList)))
@@ -192,7 +193,7 @@ export const startNewQueue = (showLoad) => {
         const lon = getState().profileReducer.coords.longitude;
         const radius = getState().settingsReducer.distance;
 
-        const url = `https://us-central1-stagg-test.cloudfunctions.net/getQueue?id=${id}&lat=${lat}&lon=${lon}&OppositeGender=${OppositeGender}&radius=${radius}`;
+        const url = `${FUNCTION_PATH}/getQueue?id=${id}&lat=${lat}&lon=${lon}&OppositeGender=${OppositeGender}&radius=${radius}`;
 
         fetch(url)
             .then((data) => data.json())

@@ -1,5 +1,6 @@
 import {firebase} from './index';
 import uuid from 'uuid';
+import {FUNCTION_PATH} from '../variables/functions';
 
 export default async (uri, name = uuid()) => {
   const body = new FormData();
@@ -10,7 +11,7 @@ export default async (uri, name = uuid()) => {
   });
   //console.log('body: ',body);
   // Need to change url to my URL
-  const res = await fetch("https://us-central1-stagg-test.cloudfunctions.net/api/picture", {
+  const res = await fetch(`${FUNCTION_PATH}/api/picture`, {
     method: "POST",
     body,
     headers: {

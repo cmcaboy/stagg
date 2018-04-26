@@ -2,16 +2,10 @@
   import 'firebase/firestore';
   import moment from 'moment';
   import uuid from 'uuid';
+  import {FIREBASE_CONFIG} from '../variables/sensitive';
   
   // Initialize Firebase
-  var config = {
-    apiKey: "AIzaSyCn91oD-gS6YjE53f5adbC5252qcHyjEjs",
-    authDomain: "stagg-test.firebaseapp.com",
-    databaseURL: "https://stagg-test.firebaseio.com",
-    projectId: "stagg-test",
-    storageBucket: "stagg-test.appspot.com",
-    messagingSenderId: "236430416072"
-  };
+  const config = FIREBASE_CONFIG;
   firebase.initializeApp(config);
 
   const database = firebase.database();
