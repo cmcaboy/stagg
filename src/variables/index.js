@@ -1,6 +1,9 @@
 export const ENV = 'PROD'; 
 
-export const PHOTO_ADD_URL = (ENV === 'PROD')?'https://firebasestorage.googleapis.com/v0/b/stagg-cc356.appspot.com/o/icons%2Fadd_pic.png?alt=media&token=8150e06c-5dce-408a-b2a5-bda2edd35131':'https://firebasestorage.googleapis.com/v0/b/stagg-test.appspot.com/o/add_pic.png?alt=media&token=5328312a-bd1a-4328-b355-2c80210b96ed'
+export const PHOTO_ADD_URL = (ENV === 'PROD')?
+'https://firebasestorage.googleapis.com/v0/b/stagg-cc356.appspot.com/o/icons%2Fadd_pic.png?alt=media&token=8150e06c-5dce-408a-b2a5-bda2edd35131'
+:
+'https://firebasestorage.googleapis.com/v0/b/stagg-test.appspot.com/o/add_pic.png?alt=media&token=5328312a-bd1a-4328-b355-2c80210b96ed'
 
 
 
